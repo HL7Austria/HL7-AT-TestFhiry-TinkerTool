@@ -1,6 +1,7 @@
 # TestFhiry TinkerTool
 
 Ein modernes Web-Tool zur visuellen Erstellung und Verwaltung von FHIR® TestScript-Ressourcen. Ermöglicht die Erstellung komplexer TestScripts ohne manuelle XML/JSON-Bearbeitung.
+Dies ist ein Teil eines übergestellten Studienprojekts, der zweite Teil ist das Projekt [TestFhiry-TestRunner](https://github.com/HL7Austria/HL7-AT-TestFhiry-TestRunner).
 
 ## Inhaltsverzeichnis
 
