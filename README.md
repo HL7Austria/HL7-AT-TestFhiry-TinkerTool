@@ -247,8 +247,8 @@ classDiagram
 
 1. **Repository klonen**
    ```bash
-   git clone https://github.com/username/testscript-crafter.git
-   cd testscript-crafter
+   git clone https://github.com/HL7Austria/HL7-AT-TestFhiry-TinkerTool.git
+   cd HL7-AT-TestFhiry-TinkerTool
    ```
 
 2. **Abhängigkeiten installieren**
