@@ -37,7 +37,7 @@ export function SyntaxHighlighter({
 
   // Theme based on current light/dark mode
   const { resolvedTheme } = useTheme()
-  const highlightTheme = resolvedTheme === 'dark' ? themes.vsDark : themes.vsLight
+  const highlightTheme = resolvedTheme === 'dark' ? themes.dracula : themes.vsLight
   //dark --> dracula, duotoneDark, synthwave84, oceanicNext, palenight, shadesOfPurple
   //light --> vsLight; duotoneLigt, nightOwlLight
 
