@@ -256,7 +256,7 @@ export function AssertionComponent({
             id="assertion-path"
             value={assertion.path ?? ""}
             onChange={(event) => updateField("path", event.target.value || undefined)}
-            placeholder="FHIRPath"
+            placeholder="XPath / JsonPath"
           />
         </div>
         <div>
@@ -291,6 +291,7 @@ export function AssertionComponent({
             }
             className={cn((compareSourceMissingId && hasComparePath || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
           />
+          <p className="text-xs text-muted-foreground">XPath / JsonPath</p>
         </div>
         <div>
           <Label htmlFor="assertion-compare-expression">Compare Expression</Label>
@@ -302,6 +303,7 @@ export function AssertionComponent({
             }
             className={cn((compareSourceMissingId && hasCompareExpression || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
           />
+          <p className="text-xs text-muted-foreground">FHIRPath</p>
         </div>
       </div>
       {compareSourceMissingId && (

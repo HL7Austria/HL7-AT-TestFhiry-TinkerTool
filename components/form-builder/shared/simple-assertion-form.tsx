@@ -201,7 +201,7 @@ export function SimpleAssertionForm({
           />
         </div>
         <div>
-          <Label htmlFor="assertion-path">Path (FHIRPath)</Label>
+          <Label htmlFor="assertion-path">Path</Label>
           <Input
             id="assertion-path"
             value={assertion.path ?? ""}
@@ -221,7 +221,7 @@ export function SimpleAssertionForm({
       </div>
 
       <div>
-        <Label htmlFor="assertion-expression">Expression (Alternative zu Path)</Label>
+        <Label htmlFor="assertion-expression">Expression (FhirPath)</Label>
         <Input
           id="assertion-expression"
           value={assertion.expression ?? ""}
@@ -247,9 +247,10 @@ export function SimpleAssertionForm({
             id="assertion-compare-path"
             value={assertion.compareToSourcePath ?? ""}
             onChange={(e) => updateField("compareToSourcePath", e.target.value || undefined)}
-            placeholder="FHIRPath im Vergleichs-Source"
+            placeholder="XPath / JsonPath im Vergleichs-Source"
             className={cn((compareSourceMissingId && hasComparePath || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
           />
+          <p className="text-xs text-muted-foreground">XPath / JsonPath</p>
         </div>
         <div>
           <Label htmlFor="assertion-compare-expression">Compare To Source Expression</Label>
@@ -257,9 +258,10 @@ export function SimpleAssertionForm({
             id="assertion-compare-expression"
             value={assertion.compareToSourceExpression ?? ""}
             onChange={(e) => updateField("compareToSourceExpression", e.target.value || undefined)}
-            placeholder="Expression im Vergleichs-Source"
+            placeholder="FHIRPath im Vergleichs-Source"
             className={cn((compareSourceMissingId && hasCompareExpression || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
           />
+          <p className="text-xs text-muted-foreground">FHIRPath</p>
         </div>
       </div>
       {compareSourceMissingId && (
