@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { Trash2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import type { TestScriptSetupActionAssert } from "@/types/fhir-enhanced"
 
 interface SimpleAssertionFormProps {
@@ -45,6 +46,12 @@ export function SimpleAssertionForm({
       [field]: value,
     })
   }
+
+  const hasCompareSourceId = Boolean(assertion.compareToSourceId)
+  const hasComparePath = Boolean(assertion.compareToSourcePath)
+  const hasCompareExpression = Boolean(assertion.compareToSourceExpression)
+  const compareSourceMissingId = !hasCompareSourceId && (hasComparePath || hasCompareExpression)
+  const compareSourceBothSet = hasComparePath && hasCompareExpression
 
   return (
     <Card className="space-y-4 p-4">
@@ -222,6 +229,45 @@ export function SimpleAssertionForm({
           placeholder="z.B. Bundle.entry.count() > 0"
         />
       </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div>
+          <Label htmlFor="assertion-compare-id">Compare To Source ID</Label>
+          <Input
+            id="assertion-compare-id"
+            value={assertion.compareToSourceId ?? ""}
+            onChange={(e) => updateField("compareToSourceId", e.target.value || undefined)}
+            placeholder="z.B. fixture-id"
+            className={cn(compareSourceMissingId && "border-destructive focus-visible:ring-destructive")}
+          />
+        </div>
+        <div>
+          <Label htmlFor="assertion-compare-path">Compare To Source Path</Label>
+          <Input
+            id="assertion-compare-path"
+            value={assertion.compareToSourcePath ?? ""}
+            onChange={(e) => updateField("compareToSourcePath", e.target.value || undefined)}
+            placeholder="FHIRPath im Vergleichs-Source"
+            className={cn((compareSourceMissingId && hasComparePath || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
+          />
+        </div>
+        <div>
+          <Label htmlFor="assertion-compare-expression">Compare To Source Expression</Label>
+          <Input
+            id="assertion-compare-expression"
+            value={assertion.compareToSourceExpression ?? ""}
+            onChange={(e) => updateField("compareToSourceExpression", e.target.value || undefined)}
+            placeholder="Expression im Vergleichs-Source"
+            className={cn((compareSourceMissingId && hasCompareExpression || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
+          />
+        </div>
+      </div>
+      {compareSourceMissingId && (
+        <p className="text-xs text-destructive">compareToSourceId ist erforderlich wenn Expression oder Path gesetzt sind.</p>
+      )}
+      {compareSourceBothSet && (
+        <p className="text-xs text-destructive">Nur compareToSourceExpression oder compareToSourcePath darf gesetzt sein, nicht beides gleichzeitig.</p>
+      )}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
