@@ -51,7 +51,6 @@ export const initialTestScript: TestScript = {
       description: "Validiert, dass der Server die Beispiel-Patientenressource bereitstellt.",
       action: [
         {
-          id: "action-read-patient",
           operation: {
             label: "Patient laden",
             description: "Führt eine READ-Operation für den Beispiel-Patienten aus.",

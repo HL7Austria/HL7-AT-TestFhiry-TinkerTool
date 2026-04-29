@@ -336,7 +336,7 @@ function TestSection({ tests }: { tests: TestScriptTest[] | undefined }) {
                     )}
                     {action.assert && (
                       <div className="mt-2 p-2 bg-muted rounded">
-                        <p className="text-sm"><span className="font-medium">Assertion:</span> {(Array.isArray(action.assert) ? action.assert[0]?.description : action.assert.description) || "No description"}</p>
+                        <p className="text-sm"><span className="font-medium">Assertion:</span> {action.assert.description || "No description"}</p>
                       </div>
                     )}
                   </div>
@@ -416,7 +416,7 @@ function CommonActionsSection({ common }: { common: TestScriptCommon[] | undefin
                       <div className="mt-2 rounded bg-muted p-2 text-sm">
                         <p>
                           <span className="font-medium">Assertion:</span>{" "}
-                          {(Array.isArray(action.assert) ? action.assert[0]?.description : action.assert.description) || "No description"}
+                          {action.assert.description || "No description"}
                         </p>
                       </div>
                     )}

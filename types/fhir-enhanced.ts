@@ -40,9 +40,9 @@ export type TestScriptTest = Omit<FhirTestScriptTest, 'action'> & {
   action?: TestScriptTestAction[];
 };
 
-// Extended Action types that support multiple assertions
+// Action type following FHIR spec: each action has either operation OR assert (singular, not both)
 export type TestScriptTestAction = Omit<FhirTestScriptTestAction, 'assert'> & {
-  assert?: TestScriptSetupActionAssert | TestScriptSetupActionAssert[];
+  assert?: TestScriptSetupActionAssert;
 };
 
 export type TestScriptSetup = FhirTestScriptSetup;

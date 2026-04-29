@@ -280,13 +280,12 @@ export default function ActionComponent<TAction extends ScriptAction>({
     return errors
   }, [operation, requestHeaders, sectionType])
 
-  const actionAssert = 'assert' in action ? action.assert : undefined
+  const actionAssert = 'assert' in action ? action.assert as TestScriptSetupActionAssert | undefined : undefined
   const assertionErrors = useMemo(() => {
     if (!actionAssert) return null
     
     // Description is only required in setup, optional in tests
-    const firstAssert = Array.isArray(actionAssert) ? actionAssert[0] : actionAssert
-    const { description, response } = firstAssert as TestScriptSetupActionAssert
+    const { description, response } = actionAssert
     return {
       description: sectionType === "setup" && !description?.trim() ? "Description required" : undefined,
       response: sectionType === "setup" && !response ? "Select expected response" : undefined,
@@ -343,47 +342,11 @@ export default function ActionComponent<TAction extends ScriptAction>({
     updateOperation({ requestHeader: headers.length > 0 ? headers : undefined })
   }
 
-  // Get assertions as array (support both single and multiple assertions)
-  const assertions = useMemo<TestScriptSetupActionAssert[]>(() => {
-    if (!actionAssert) return []
-    return Array.isArray(actionAssert) ? actionAssert : [actionAssert]
-  }, [actionAssert])
-
-  const addAssertion = () => {
-    const newAssertion: TestScriptSetupActionAssert = {
-      description: "",
-      response: "okay",
-      warningOnly: false,
-      stopTestOnFail: true,
-    }
-    const updatedAssertions = [...assertions, newAssertion]
+  const updateAssert = (assertion: TestScriptSetupActionAssert) => {
     updateAction({
       ...action,
-      assert: updatedAssertions,
+      assert: assertion,
     } as TAction)
-  }
-
-  const updateAssertion = (index: number, assertion: TestScriptSetupActionAssert) => {
-    const updatedAssertions = [...assertions]
-    updatedAssertions[index] = assertion
-    updateAction({
-      ...action,
-      assert: updatedAssertions,
-    } as TAction)
-  }
-
-  const removeAssertion = (index: number) => {
-    const updatedAssertions = assertions.filter((_, idx) => idx !== index)
-    if (updatedAssertions.length === 0) {
-      const next = { ...action } as ScriptAction & { assert?: TestScriptSetupActionAssert | TestScriptSetupActionAssert[] }
-      delete next.assert
-      updateAction(next as TAction)
-    } else {
-      updateAction({
-        ...action,
-        assert: updatedAssertions,
-      } as TAction)
-    }
   }
 
   const removeRequirement = (requirements: TestScriptSetupActionAssertRequirement[] | undefined, idx: number) => {
@@ -407,7 +370,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
           <p className="text-xs text-muted-foreground">
             {isAssertionOnly 
               ? "Validiert Ergebnisse ohne neue HTTP-Anfrage"
-              : "Definiert eine Operation und optionale Assertions"}
+              : "Definiert eine HTTP-Operation"}
           </p>
         </div>
         {removeAction && (
@@ -418,26 +381,18 @@ export default function ActionComponent<TAction extends ScriptAction>({
       </div>
 
       {isAssertionOnly ? (
-        <div className="rounded-md border border-dashed p-4 text-center">
-          <p className="text-sm text-muted-foreground mb-2">
-            Diese Action enthält nur Assertions, keine HTTP-Operation.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              updateAction({
-                ...action,
-                operation: {
-                  encodeRequestUrl: true,
-                },
-              } as TAction)
-            }}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Operation hinzufügen
-          </Button>
-        </div>
+        <AssertionComponent
+          assertion={actionAssert!}
+          updateAssertion={updateAssert}
+          removeAssertion={() => {}}
+          responseOptions={RESPONSE_OPTIONS.map((v) => ({ value: v!, label: v! }))}
+          directionOptions={ASSERTION_DIRECTIONS.map((v) => ({ value: v!, label: v! }))}
+          operatorOptions={ASSERTION_OPERATORS.map((v) => ({ value: v!, label: v! }))}
+          requestMethodOptions={REQUEST_METHOD_OPTIONS.map((v) => ({ value: v!, label: v! }))}
+          onAddRequirement={addRequirement}
+          onRemoveRequirement={removeRequirement}
+          errors={assertionErrors ?? undefined}
+        />
       ) : (
         <>
           <div>
@@ -450,399 +405,358 @@ export default function ActionComponent<TAction extends ScriptAction>({
             />
           </div>
 
-      <div>
-        <Label>Operation Type System</Label>
-        <Input
-          value={operation.type?.system ?? "http://terminology.hl7.org/CodeSystem/testscript-operation-codes"}
-          onChange={(event) => updateOperationTypeField("system", event.target.value)}
-        />
-      </div>
+          <div>
+            <Label>Operation Type System</Label>
+            <Input
+              value={operation.type?.system ?? "http://terminology.hl7.org/CodeSystem/testscript-operation-codes"}
+              onChange={(event) => updateOperationTypeField("system", event.target.value)}
+            />
+          </div>
 
-      <div>
-        <Label>Operation Type Code</Label>
-        <Select
-          value={operation.type?.code ?? ""}
-          onValueChange={(value) => updateOperationTypeField("code", value)}
-        >
-          <SelectTrigger className={cn(operationErrors.typeCode && "border-destructive focus-visible:ring-destructive")}>
-            <SelectValue placeholder="Select operation..." />
-          </SelectTrigger>
-          <SelectContent>
-            {OPERATION_TYPE_CODES.map((op) => (
-              <SelectItem key={op.value} value={op.value}>
-                {op.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {operationErrors.typeCode && (
-          <p className="text-xs text-destructive">{operationErrors.typeCode}</p>
-        )}
-      </div>
-
-      <div>
-        <Label>Operation Type Display</Label>
-        <Input
-          value={operation.type?.display ?? ""}
-          onChange={(event) => updateOperationTypeField("display", event.target.value || undefined)}
-          placeholder="Human readable name"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <div>
-          <Label htmlFor={`action-${index}-method`}>HTTP Method</Label>
-          <Select
-            value={operation.method ?? ""}
-            onValueChange={(value) => updateOperationField("method", value as typeof operation.method)}
-          >
-            <SelectTrigger id={`action-${index}-method`}>
-              <SelectValue placeholder="Select method" />
-            </SelectTrigger>
-            <SelectContent>
-              {HTTP_METHODS.map((method) => (
-                <SelectItem key={method ?? ""} value={method ?? ""}>
-                  {method?.toUpperCase()}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {operationErrors.method && (
-            <p className="text-xs text-destructive">{operationErrors.method}</p>
-          )}
-        </div>
-        <div>
-          <Label htmlFor={`action-${index}-resource`}>Resource Type</Label>
-          {showCustomResourceType ? (
-            <div className="space-y-2">
-              <Input
-                id={`action-${index}-resource`}
-                value={operation.resource ?? ""}
-                onChange={(event) => updateOperationField("resource", event.target.value || undefined)}
-                placeholder="Custom resource type"
-                className={cn(operationErrors.resource && "border-destructive focus-visible:ring-destructive")}
-                aria-invalid={Boolean(operationErrors.resource)}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setShowCustomResourceType(false)
-                  updateOperationField("resource", undefined)
-                }}
-                className="text-xs"
-              >
-                ← Back to selection
-              </Button>
-            </div>
-          ) : (
-          <Select
-            value={operation.resource ?? "__none__"}
-            onValueChange={(value) => {
-              if (value === "__custom__") {
-                setShowCustomResourceType(true)
-                updateOperationField("resource", "")
-              } else if (value === "__none__") {
-                updateOperationField("resource", undefined)
-              } else {
-                updateOperationField("resource", value || undefined)
-              }
-            }}
-          >
-            <SelectTrigger 
-              id={`action-${index}-resource`}
-              className={cn(operationErrors.resource && "border-destructive focus-visible:ring-destructive")}
-            >
-              <SelectValue placeholder="Select resource..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">-- None --</SelectItem>
-              {FHIR_RESOURCE_TYPES.map((resourceType) => (
-                <SelectItem key={resourceType} value={resourceType}>
-                  {resourceType}
-                </SelectItem>
-              ))}
-              <SelectItem value="__custom__" className="text-primary font-medium">
-                ✏️ Custom Type...
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          )}
-          {operationErrors.resource && (
-            <p className="text-xs text-destructive">{operationErrors.resource}</p>
-          )}
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor={`action-${index}-url`}>URL</Label>
-        <Input
-          id={`action-${index}-url`}
-          value={operation.url ?? ""}
-          onChange={(event) => updateOperationField("url", event.target.value || undefined)}
-          placeholder="/Patient/example"
-          className={cn(operationErrors.url && "border-destructive focus-visible:ring-destructive")}
-          aria-invalid={Boolean(operationErrors.url)}
-        />
-        {operationErrors.url && <p className="text-xs text-destructive">{operationErrors.url}</p>}
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <div>
-          <Label htmlFor={`action-${index}-accept`}>Accept</Label>
-          <Select
-            value={operation.accept ?? "__none__"}
-            onValueChange={(value) => updateOperationField("accept", value === "__none__" ? undefined : value)}
-          >
-            <SelectTrigger id={`action-${index}-accept`}>
-              <SelectValue placeholder="Select accept type..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">-- None --</SelectItem>
-              {CONTENT_TYPE_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor={`action-${index}-contentType`}>Content-Type</Label>
-          <Select
-            value={operation.contentType ?? "__none__"}
-            onValueChange={(value) => updateOperationField("contentType", value === "__none__" ? undefined : value)}
-          >
-            <SelectTrigger id={`action-${index}-contentType`}>
-              <SelectValue placeholder="Select content type..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">-- None --</SelectItem>
-              {CONTENT_TYPE_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor={`action-${index}-params`}>Parameter</Label>
-        <Textarea
-          id={`action-${index}-params`}
-          value={operation.params ?? ""}
-          onChange={(event) => updateOperationField("params", event.target.value || undefined)}
-          rows={2}
-          placeholder="?_id=example"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <Label htmlFor={`action-${index}-destination`}>Destination</Label>
-          <Input
-            id={`action-${index}-destination`}
-            type="number"
-            min={0}
-            value={operation.destination ?? ""}
-            onChange={(event) =>
-              updateOperationField(
-                "destination",
-                event.target.value ? Number(event.target.value) : undefined,
-              )
-            }
-          />
-        </div>
-        <div>
-          <Label htmlFor={`action-${index}-origin`}>Origin</Label>
-          <Input
-            id={`action-${index}-origin`}
-            type="number"
-            min={0}
-            value={operation.origin ?? ""}
-            onChange={(event) =>
-              updateOperationField("origin", event.target.value ? Number(event.target.value) : undefined)
-            }
-          />
-        </div>
-        <div>
-          <Label htmlFor={`action-${index}-requestId`}>Request ID</Label>
-          <Input
-            id={`action-${index}-requestId`}
-            value={operation.requestId ?? ""}
-            onChange={(event) => updateOperationField("requestId", event.target.value || undefined)}
-            placeholder="fixture-request"
-          />
-        </div>
-        <div>
-          <Label htmlFor={`action-${index}-responseId`}>Response ID</Label>
-          <Input
-            id={`action-${index}-responseId`}
-            value={operation.responseId ?? ""}
-            onChange={(event) => updateOperationField("responseId", event.target.value || undefined)}
-            placeholder="fixture-response"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <div>
-          <Label htmlFor={`action-${index}-sourceId`}>Source ID</Label>
-          <Input
-            id={`action-${index}-sourceId`}
-            value={operation.sourceId ?? ""}
-            onChange={(event) => updateOperationField("sourceId", event.target.value || undefined)}
-            className={cn(operationErrors.sourceId && "border-destructive focus-visible:ring-destructive")}
-            aria-invalid={Boolean(operationErrors.sourceId)}
-          />
-          {operationErrors.sourceId && (
-            <p className="text-xs text-destructive">{operationErrors.sourceId}</p>
-          )}
-        </div>
-        <div>
-          <Label htmlFor={`action-${index}-targetId`}>Target ID</Label>
-          {availableFixtures.length > 0 ? (
+          <div>
+            <Label>Operation Type Code</Label>
             <Select
-              value={operation.targetId ?? "__none__"}
-              onValueChange={(value) => updateOperationField("targetId", value === "__none__" ? undefined : value)}
+              value={operation.type?.code ?? ""}
+              onValueChange={(value) => updateOperationTypeField("code", value)}
             >
-              <SelectTrigger id={`action-${index}-targetId`}>
-                <SelectValue placeholder="Select fixture..." />
+              <SelectTrigger className={cn(operationErrors.typeCode && "border-destructive focus-visible:ring-destructive")}>
+                <SelectValue placeholder="Select operation..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">-- None --</SelectItem>
-                {availableFixtures.map((fixture) => (
-                  <SelectItem key={fixture.id} value={fixture.id}>
-                    {fixture.id}
-                    {fixture.description && ` (${fixture.description})`}
+                {OPERATION_TYPE_CODES.map((op) => (
+                  <SelectItem key={op.value} value={op.value}>
+                    {op.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          ) : (
-            <Input
-              id={`action-${index}-targetId`}
-              value={operation.targetId ?? ""}
-              onChange={(event) => updateOperationField("targetId", event.target.value || undefined)}
-              placeholder="Fixture ID"
-            />
-          )}
-        </div>
-      </div>
+            {operationErrors.typeCode && (
+              <p className="text-xs text-destructive">{operationErrors.typeCode}</p>
+            )}
+          </div>
 
-      <div className="rounded-md border p-3">
-        <div className="flex items-center justify-between">
           <div>
-            <Label htmlFor={`action-${index}-encode`}>Encode Request URL</Label>
-            <p className="text-xs text-muted-foreground">Enabled by default.</p>
+            <Label>Operation Type Display</Label>
+            <Input
+              value={operation.type?.display ?? ""}
+              onChange={(event) => updateOperationTypeField("display", event.target.value || undefined)}
+              placeholder="Human readable name"
+            />
           </div>
-          <Switch
-            id={`action-${index}-encode`}
-            checked={operation.encodeRequestUrl ?? true}
-            onCheckedChange={(checked) => updateOperationField("encodeRequestUrl", checked)}
-          />
-        </div>
-      </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h5 className="text-sm font-medium">Request Header</h5>
-          <Button variant="ghost" size="sm" onClick={addRequestHeader} className="flex items-center gap-1">
-            <Plus className="h-4 w-4" />
-            Add Header
-          </Button>
-        </div>
-        {requestHeaders.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No additional headers defined.</p>
-        ) : (
-          <div className="space-y-2">
-            {requestHeaders.map((header, headerIdx) => (
-              <div
-                key={headerIdx}
-                className="grid grid-cols-[1fr_1fr_auto] items-center gap-2 rounded-md border p-3"
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div>
+              <Label htmlFor={`action-${index}-method`}>HTTP Method</Label>
+              <Select
+                value={operation.method ?? ""}
+                onValueChange={(value) => updateOperationField("method", value as typeof operation.method)}
               >
-                <Input
-                  value={header.field}
-                  onChange={(event) => updateRequestHeader(headerIdx, "field", event.target.value)}
-                  placeholder="Header field"
-                  className={cn(
-                    operationErrors.requestHeaders?.[headerIdx] &&
-                      operationErrors.requestHeaders[headerIdx].some((msg) => msg.includes("Field")) &&
-                      "border-destructive focus-visible:ring-destructive",
-                  )}
-                />
-                <Input
-                  value={header.value}
-                  onChange={(event) => updateRequestHeader(headerIdx, "value", event.target.value)}
-                  placeholder="Header value"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive"
-                  onClick={() => removeRequestHeader(headerIdx)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                {operationErrors.requestHeaders?.[headerIdx]?.length ? (
-                  <div className="col-span-3 space-y-1">
-                    {operationErrors.requestHeaders[headerIdx].map((message, messageIdx) => (
-                      <p key={messageIdx} className="text-xs text-destructive">
-                        {message}
-                      </p>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-        </>
-      )}
-
-      {((sectionType === "test" || sectionType === "common") || isAssertionOnly) && (
-        <div className="space-y-3 border-t pt-4">
-          <div className="flex items-center justify-between">
-            <h5 className="text-sm font-medium">
-              Assertions ({assertions.length})
-              {isAssertionOnly && <span className="ml-2 text-xs font-normal text-muted-foreground">(Hauptinhalt dieser Action)</span>}
-            </h5>
-            <Button variant="outline" size="sm" onClick={addAssertion} className="flex items-center gap-1">
-              <Plus className="h-4 w-4" />
-              Assertion hinzufügen
-            </Button>
-          </div>
-
-          {assertions.length > 0 ? (
-            <div className="space-y-3">
-              {assertions.map((assertion, idx) => (
-                <AssertionComponent
-                  key={idx}
-                  assertion={assertion}
-                  updateAssertion={(updated) => updateAssertion(idx, updated)}
-                  removeAssertion={() => removeAssertion(idx)}
-                  responseOptions={RESPONSE_OPTIONS.map((v) => ({ value: v!, label: v! }))}
-                  directionOptions={ASSERTION_DIRECTIONS.map((v) => ({ value: v!, label: v! }))}
-                  operatorOptions={ASSERTION_OPERATORS.map((v) => ({ value: v!, label: v! }))}
-                  requestMethodOptions={REQUEST_METHOD_OPTIONS.map((v) => ({ value: v!, label: v! }))}
-                  onAddRequirement={addRequirement}
-                  onRemoveRequirement={removeRequirement}
-                  errors={assertionErrors ?? undefined}
-                />
-              ))}
+                <SelectTrigger id={`action-${index}-method`}>
+                  <SelectValue placeholder="Select method" />
+                </SelectTrigger>
+                <SelectContent>
+                  {HTTP_METHODS.map((method) => (
+                    <SelectItem key={method ?? ""} value={method ?? ""}>
+                      {method?.toUpperCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {operationErrors.method && (
+                <p className="text-xs text-destructive">{operationErrors.method}</p>
+              )}
             </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              {isAssertionOnly 
-                ? "Keine Assertions definiert. Diese Action sollte mindestens eine Assertion enthalten."
-                : "Keine Assertions definiert. Fügen Sie Assertions hinzu, um die Operation zu validieren."}
-            </p>
-          )}
-        </div>
+            <div>
+              <Label htmlFor={`action-${index}-resource`}>Resource Type</Label>
+              {showCustomResourceType ? (
+                <div className="space-y-2">
+                  <Input
+                    id={`action-${index}-resource`}
+                    value={operation.resource ?? ""}
+                    onChange={(event) => updateOperationField("resource", event.target.value || undefined)}
+                    placeholder="Custom resource type"
+                    className={cn(operationErrors.resource && "border-destructive focus-visible:ring-destructive")}
+                    aria-invalid={Boolean(operationErrors.resource)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowCustomResourceType(false)
+                      updateOperationField("resource", undefined)
+                    }}
+                    className="text-xs"
+                  >
+                    ← Back to selection
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  value={operation.resource ?? "__none__"}
+                  onValueChange={(value) => {
+                    if (value === "__custom__") {
+                      setShowCustomResourceType(true)
+                      updateOperationField("resource", "")
+                    } else if (value === "__none__") {
+                      updateOperationField("resource", undefined)
+                    } else {
+                      updateOperationField("resource", value || undefined)
+                    }
+                  }}
+                >
+                  <SelectTrigger 
+                    id={`action-${index}-resource`}
+                    className={cn(operationErrors.resource && "border-destructive focus-visible:ring-destructive")}
+                  >
+                    <SelectValue placeholder="Select resource..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">-- None --</SelectItem>
+                    {FHIR_RESOURCE_TYPES.map((resourceType) => (
+                      <SelectItem key={resourceType} value={resourceType}>
+                        {resourceType}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__custom__" className="text-primary font-medium">
+                      ✏️ Custom Type...
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+              {operationErrors.resource && (
+                <p className="text-xs text-destructive">{operationErrors.resource}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor={`action-${index}-url`}>URL</Label>
+            <Input
+              id={`action-${index}-url`}
+              value={operation.url ?? ""}
+              onChange={(event) => updateOperationField("url", event.target.value || undefined)}
+              placeholder="/Patient/example"
+              className={cn(operationErrors.url && "border-destructive focus-visible:ring-destructive")}
+              aria-invalid={Boolean(operationErrors.url)}
+            />
+            {operationErrors.url && <p className="text-xs text-destructive">{operationErrors.url}</p>}
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div>
+              <Label htmlFor={`action-${index}-accept`}>Accept</Label>
+              <Select
+                value={operation.accept ?? "__none__"}
+                onValueChange={(value) => updateOperationField("accept", value === "__none__" ? undefined : value)}
+              >
+                <SelectTrigger id={`action-${index}-accept`}>
+                  <SelectValue placeholder="Select accept type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">-- None --</SelectItem>
+                  {CONTENT_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor={`action-${index}-contentType`}>Content-Type</Label>
+              <Select
+                value={operation.contentType ?? "__none__"}
+                onValueChange={(value) => updateOperationField("contentType", value === "__none__" ? undefined : value)}
+              >
+                <SelectTrigger id={`action-${index}-contentType`}>
+                  <SelectValue placeholder="Select content type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">-- None --</SelectItem>
+                  {CONTENT_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor={`action-${index}-params`}>Parameter</Label>
+            <Textarea
+              id={`action-${index}-params`}
+              value={operation.params ?? ""}
+              onChange={(event) => updateOperationField("params", event.target.value || undefined)}
+              rows={2}
+              placeholder="?_id=example"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <Label htmlFor={`action-${index}-destination`}>Destination</Label>
+              <Input
+                id={`action-${index}-destination`}
+                type="number"
+                min={0}
+                value={operation.destination ?? ""}
+                onChange={(event) =>
+                  updateOperationField(
+                    "destination",
+                    event.target.value ? Number(event.target.value) : undefined,
+                  )
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor={`action-${index}-origin`}>Origin</Label>
+              <Input
+                id={`action-${index}-origin`}
+                type="number"
+                min={0}
+                value={operation.origin ?? ""}
+                onChange={(event) =>
+                  updateOperationField("origin", event.target.value ? Number(event.target.value) : undefined)
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor={`action-${index}-requestId`}>Request ID</Label>
+              <Input
+                id={`action-${index}-requestId`}
+                value={operation.requestId ?? ""}
+                onChange={(event) => updateOperationField("requestId", event.target.value || undefined)}
+                placeholder="fixture-request"
+              />
+            </div>
+            <div>
+              <Label htmlFor={`action-${index}-responseId`}>Response ID</Label>
+              <Input
+                id={`action-${index}-responseId`}
+                value={operation.responseId ?? ""}
+                onChange={(event) => updateOperationField("responseId", event.target.value || undefined)}
+                placeholder="fixture-response"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div>
+              <Label htmlFor={`action-${index}-sourceId`}>Source ID</Label>
+              <Input
+                id={`action-${index}-sourceId`}
+                value={operation.sourceId ?? ""}
+                onChange={(event) => updateOperationField("sourceId", event.target.value || undefined)}
+                className={cn(operationErrors.sourceId && "border-destructive focus-visible:ring-destructive")}
+                aria-invalid={Boolean(operationErrors.sourceId)}
+              />
+              {operationErrors.sourceId && (
+                <p className="text-xs text-destructive">{operationErrors.sourceId}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor={`action-${index}-targetId`}>Target ID</Label>
+              {availableFixtures.length > 0 ? (
+                <Select
+                  value={operation.targetId ?? "__none__"}
+                  onValueChange={(value) => updateOperationField("targetId", value === "__none__" ? undefined : value)}
+                >
+                  <SelectTrigger id={`action-${index}-targetId`}>
+                    <SelectValue placeholder="Select fixture..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">-- None --</SelectItem>
+                    {availableFixtures.map((fixture) => (
+                      <SelectItem key={fixture.id} value={fixture.id}>
+                        {fixture.id}
+                        {fixture.description && ` (${fixture.description})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  id={`action-${index}-targetId`}
+                  value={operation.targetId ?? ""}
+                  onChange={(event) => updateOperationField("targetId", event.target.value || undefined)}
+                  placeholder="Fixture ID"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-md border p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor={`action-${index}-encode`}>Encode Request URL</Label>
+                <p className="text-xs text-muted-foreground">Enabled by default.</p>
+              </div>
+              <Switch
+                id={`action-${index}-encode`}
+                checked={operation.encodeRequestUrl ?? true}
+                onCheckedChange={(checked) => updateOperationField("encodeRequestUrl", checked)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h5 className="text-sm font-medium">Request Header</h5>
+              <Button variant="ghost" size="sm" onClick={addRequestHeader} className="flex items-center gap-1">
+                <Plus className="h-4 w-4" />
+                Add Header
+              </Button>
+            </div>
+            {requestHeaders.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No additional headers defined.</p>
+            ) : (
+              <div className="space-y-2">
+                {requestHeaders.map((header, headerIdx) => (
+                  <div
+                    key={headerIdx}
+                    className="grid grid-cols-[1fr_1fr_auto] items-center gap-2 rounded-md border p-3"
+                  >
+                    <Input
+                      value={header.field}
+                      onChange={(event) => updateRequestHeader(headerIdx, "field", event.target.value)}
+                      placeholder="Header field"
+                      className={cn(
+                        operationErrors.requestHeaders?.[headerIdx] &&
+                          operationErrors.requestHeaders[headerIdx].some((msg) => msg.includes("Field")) &&
+                          "border-destructive focus-visible:ring-destructive",
+                      )}
+                    />
+                    <Input
+                      value={header.value}
+                      onChange={(event) => updateRequestHeader(headerIdx, "value", event.target.value)}
+                      placeholder="Header value"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive"
+                      onClick={() => removeRequestHeader(headerIdx)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                    {operationErrors.requestHeaders?.[headerIdx]?.length ? (
+                      <div className="col-span-3 space-y-1">
+                        {operationErrors.requestHeaders[headerIdx].map((message, messageIdx) => (
+                          <p key={messageIdx} className="text-xs text-destructive">
+                            {message}
+                          </p>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </Card>
   )

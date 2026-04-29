@@ -92,10 +92,9 @@ export function TestCaseSection({
 
   const getActionTitle = (action: TestScriptTestAction, index: number) => {
     if (action.operation?.label) return action.operation.label
-    const firstAssert = Array.isArray(action.assert) ? action.assert[0] : action.assert
-    if (firstAssert?.label) return firstAssert.label
+    if (action.assert?.label) return action.assert.label
     if (action.operation?.resource) return `Operation ${action.operation.resource}`
-    if (firstAssert?.description) return firstAssert.description
+    if (action.assert?.description) return action.assert.description
     return `Action ${index + 1}`
   }
 
@@ -187,7 +186,7 @@ export function TestCaseSection({
                           </Badge>
                         </div>
                         <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                          {action.operation?.description || (Array.isArray(action.assert) ? action.assert[0]?.description : action.assert?.description) || "No description"}
+                          {action.operation?.description || action.assert?.description || "No description"}
                         </p>
                       </button>
                     )

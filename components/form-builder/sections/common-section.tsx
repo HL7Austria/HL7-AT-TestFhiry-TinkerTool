@@ -81,6 +81,21 @@ const removeParameter = (entry: TestScriptCommon, parameterIdx: number): TestScr
     ],
   })
 
+  const addAssertionAction = (entry: TestScriptCommon): TestScriptCommon => ({
+    ...entry,
+    action: [
+      ...(entry.action ?? []),
+      {
+        assert: {
+          description: "",
+          response: "okay",
+          warningOnly: false,
+          stopTestOnFail: true,
+        },
+      } as TestScriptTestAction,
+    ],
+  })
+
   const updateAction = (
     entry: TestScriptCommon,
     actionIdx: number,
@@ -237,15 +252,26 @@ const removeAction = (entry: TestScriptCommon, actionIdx: number): TestScriptCom
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h5 className="text-sm font-medium">Actions</h5>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => updateEntry(idx, addAction(entry))}
-                        className="flex items-center gap-1"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Action
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => updateEntry(idx, addAction(entry))}
+                          className="flex items-center gap-1"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Operation
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => updateEntry(idx, addAssertionAction(entry))}
+                          className="flex items-center gap-1"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Assertion
+                        </Button>
+                      </div>
                     </div>
 
                     {(entry.action ?? []).length === 0 ? (
