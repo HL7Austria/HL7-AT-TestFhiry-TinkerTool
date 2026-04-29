@@ -53,7 +53,7 @@ export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionPro
         <h5 className="text-sm font-medium">Neues Profil hinzufügen</h5>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
-            <Label htmlFor="new-profile-id">ID (z.B. "patient-profile")</Label>
+            <Label htmlFor="new-profile-id">ID (z.B. &quot;patient-profile&quot;)</Label>
             <Input
               id="new-profile-id"
               value={newProfileId}

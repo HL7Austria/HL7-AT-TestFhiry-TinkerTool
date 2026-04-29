@@ -18,8 +18,7 @@ import {
   Database, 
   CheckCircle2, 
   AlertCircle,
-  Eye,
-  Download
+  Eye
 } from "lucide-react"
 import type { 
   IGConfiguration, 
@@ -183,7 +182,7 @@ export function IGBrowserTab({ fixtures, updateFixtures, igConfiguration }: IGBr
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             No Implementation Guide sources configured. 
-            Switch to the "IG Configuration" tab to add sources.
+            Switch to the &quot;IG Configuration&quot; tab to add sources.
           </AlertDescription>
         </Alert>
       </div>

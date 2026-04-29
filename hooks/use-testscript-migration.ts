@@ -47,9 +47,9 @@ export function useTestScriptMigration(): UseTestScriptMigrationReturn {
       console.error('Migration fehlgeschlagen:', result.errors)
       return null
     }
-  }, [])
+  }, [currentVersion])
 
-  const isCompatible = useCallback((testScript: TestScript): boolean => {
+  const isCompatible = useCallback((_testScript: TestScript): boolean => {
     // TestScript ist jetzt versionsneutral, Kompatibilität wird durch Context bestimmt
     return true
   }, [])

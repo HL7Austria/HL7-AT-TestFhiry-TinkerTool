@@ -72,7 +72,7 @@ export function parseXmlTestScript(xmlContent: string): ImportResult {
     }
 
     // Convert XML to JSON
-    const jsonContent = xmlToJson(xmlDoc.documentElement)
+    const jsonContent = xmlToJson(xmlDoc.documentElement) as XmlJsonObject
 
     // Check if it's a TestScript
     if (jsonContent.resourceType !== "TestScript") {
@@ -84,7 +84,7 @@ export function parseXmlTestScript(xmlContent: string): ImportResult {
 
     return {
       success: true,
-      testScript: jsonContent as TestScript,
+      testScript: jsonContent as unknown as TestScript,
     }
   } catch (error) {
     return {
@@ -94,11 +94,14 @@ export function parseXmlTestScript(xmlContent: string): ImportResult {
   }
 }
 
+type XmlJsonValue = string | XmlJsonObject | XmlJsonValue[]
+interface XmlJsonObject { [key: string]: XmlJsonValue }
+
 /**
  * Konvertiert ein XML-Element rekursiv zu einem JavaScript-Objekt
  */
-function xmlToJson(xml: Element): any {
-  const result: any = {}
+function xmlToJson(xml: Element): XmlJsonValue {
+  const result: XmlJsonObject = {}
 
   // Attribute verarbeiten
   if (xml.attributes.length > 0) {
@@ -132,7 +135,7 @@ function xmlToJson(xml: Element): any {
           if (!Array.isArray(result[tagName])) {
             result[tagName] = [result[tagName]]
           }
-          result[tagName].push(xmlToJson(element))
+          (result[tagName] as XmlJsonValue[]).push(xmlToJson(element))
         } else {
           result[tagName] = xmlToJson(element)
         }

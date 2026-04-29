@@ -1,8 +1,9 @@
-import { create, type XMLBuilder } from "xmlbuilder2"
+import { create } from "xmlbuilder2"
+import type { XMLBuilder } from "xmlbuilder2/lib/interfaces"
 import type { TestScript } from "@/types/fhir-enhanced"
 
 type SerializablePrimitive = string | number | boolean | null
-type SerializableValue = SerializablePrimitive | SerializableValue[] | Record<string, SerializableValue>
+type SerializableValue = SerializablePrimitive | SerializableValue[] | { [key: string]: SerializableValue }
 
 const isRecord = (value: unknown): value is Record<string, SerializableValue> =>
   typeof value === "object" && value !== null && !Array.isArray(value)

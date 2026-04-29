@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, startTransition } from "react"
 
 interface UseProgressAnimationOptions {
   isActive: boolean
@@ -25,7 +25,7 @@ export function useProgressAnimation({
 
   useEffect(() => {
     if (isActive) {
-      setProgress(0)
+      startTransition(() => setProgress(0))
       stepRef.current = 0
       
       intervalRef.current = setInterval(() => {
@@ -48,7 +48,7 @@ export function useProgressAnimation({
       }
     } else {
       // Animation beenden
-      setProgress(100)
+      startTransition(() => setProgress(100))
       const timeout = setTimeout(() => setProgress(0), 1000)
       return () => clearTimeout(timeout)
     }

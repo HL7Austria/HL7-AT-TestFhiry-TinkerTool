@@ -28,7 +28,6 @@ import type {
 // Import R5-specific types that might not exist in R4
 import type { TestScriptScope as FhirTestScriptScope } from "fhir/r5"
 
-import type { FhirVersion } from "./fhir-config"
 
 /**
  * Erweiterte FHIR-Typen basierend auf @types/fhir
@@ -37,7 +36,9 @@ import type { FhirVersion } from "./fhir-config"
 
 export type TestScriptStatus = NonNullable<FhirTestScript["status"]>;
 
-export type TestScriptTest = FhirTestScriptTest;
+export type TestScriptTest = Omit<FhirTestScriptTest, 'action'> & {
+  action?: TestScriptTestAction[];
+};
 
 // Extended Action types that support multiple assertions
 export type TestScriptTestAction = Omit<FhirTestScriptTestAction, 'assert'> & {
@@ -46,7 +47,9 @@ export type TestScriptTestAction = Omit<FhirTestScriptTestAction, 'assert'> & {
 
 export type TestScriptSetup = FhirTestScriptSetup;
 export type TestScriptSetupAction = FhirTestScriptSetupAction;
-export type TestScriptSetupActionAssert = FhirTestScriptSetupActionAssert;
+export type TestScriptSetupActionAssert = FhirTestScriptSetupActionAssert & {
+  details?: FhirCodeableConcept;
+};
 export type TestScriptSetupActionOperation = FhirTestScriptSetupActionOperation;
 export type TestScriptTeardown = FhirTestScriptTeardown;
 export type TestScriptTeardownAction = FhirTestScriptTeardownAction;
@@ -91,7 +94,8 @@ export interface TestScriptCommon {
   action: TestScriptTestAction[];
 }
 
-export type TestScript = FhirTestScript & {
+export type TestScript = Omit<FhirTestScript, 'test' | 'profile'> & {
+  test?: TestScriptTest[];
   testSystem?: TestSystem[];
   common?: TestScriptCommon[];
   profile?: TestScriptProfile[];
@@ -120,6 +124,6 @@ export type CodeableConcept = FhirCodeableConcept;
 
 // Define commonly used Enum types as string unions (consistent across FHIR versions)
 export type TestScriptSetupActionAssertDirection = "request" | "response"
-export type TestScriptSetupActionAssertOperator = "equals" | "notEquals" | "in" | "notIn" | "greaterThan" | "lessThan" | "empty" | "notEmpty" | "contains" | "notContains" | "eval"
-export type TestScriptSetupActionAssertResponse = "continue" | "switchingProtocols" | "okay" | "created" | "accepted" | "nonAuthoritativeInformation" | "noContent" | "resetContent" | "partialContent" | "multipleChoices" | "movedPermanently" | "found" | "seeOther" | "notModified" | "useProxy" | "temporaryRedirect" | "badRequest" | "unauthorized" | "paymentRequired" | "forbidden" | "notFound" | "methodNotAllowed" | "notAcceptable" | "proxyAuthenticationRequired" | "requestTimeOut" | "conflict" | "gone" | "lengthRequired" | "preconditionFailed" | "contentTooLarge" | "uriTooLong" | "unsupportedMediaType" | "rangeNotSatisfiable" | "expectationFailed" | "unprocessableEntity" | "locked" | "failedDependency" | "upgradeRequired" | "internalServerError" | "notImplemented" | "badGateway" | "serviceUnavailable" | "gatewayTimeOut" | "httpVersionNotSupported"
+export type TestScriptSetupActionAssertOperator = "equals" | "notEquals" | "in" | "notIn" | "greaterThan" | "lessThan" | "empty" | "notEmpty" | "contains" | "notContains" | "eval" | "manualEval"
+export type TestScriptSetupActionAssertResponse = "continue" | "switchingProtocols" | "okay" | "created" | "accepted" | "nonAuthoritativeInformation" | "noContent" | "resetContent" | "partialContent" | "multipleChoices" | "movedPermanently" | "found" | "seeOther" | "notModified" | "useProxy" | "temporaryRedirect" | "permanentRedirect" | "badRequest" | "unauthorized" | "paymentRequired" | "forbidden" | "notFound" | "methodNotAllowed" | "notAcceptable" | "proxyAuthenticationRequired" | "requestTimeout" | "conflict" | "gone" | "lengthRequired" | "preconditionFailed" | "contentTooLarge" | "uriTooLong" | "unsupportedMediaType" | "rangeNotSatisfiable" | "expectationFailed" | "misdirectedRequest" | "unprocessableContent" | "upgradeRequired" | "internalServerError" | "notImplemented" | "badGateway" | "serviceUnavailable" | "gatewayTimeout" | "httpVersionNotSupported"
 export type TestScriptSetupActionOperationMethod = "head" | "get" | "post" | "put" | "patch" | "delete" | "options"

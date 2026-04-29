@@ -17,9 +17,9 @@ import type {
   TestScriptTestAction,
   Coding,
 } from "@/types/fhir-enhanced"
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, startTransition } from "react"
 import { cn } from "@/lib/utils"
-import { SimpleAssertionForm } from "./simple-assertion-form"
+import { AssertionComponent } from "./assertion-component"
 
 type SectionType = "setup" | "test" | "teardown" | "common"
 type ScriptAction = TestScriptSetupAction | TestScriptTestAction | TestScriptTeardownAction
@@ -201,7 +201,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
   const [showCustomResourceType, setShowCustomResourceType] = useState(false)
   
   // Check if this is an assertion-only action (no operation)
-  const isAssertionOnly = !action.operation && action.assert
+  const isAssertionOnly = !action.operation && 'assert' in action && action.assert
   
   const operation = useMemo<TestScriptSetupActionOperation>(
     () => ({
@@ -216,7 +216,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
   // Check if current resource type is custom (not in predefined list)
   useEffect(() => {
     if (operation.resource && !FHIR_RESOURCE_TYPES.includes(operation.resource)) {
-      setShowCustomResourceType(true)
+      startTransition(() => setShowCustomResourceType(true))
     }
   }, [operation.resource])
 
@@ -280,16 +280,18 @@ export default function ActionComponent<TAction extends ScriptAction>({
     return errors
   }, [operation, requestHeaders, sectionType])
 
+  const actionAssert = 'assert' in action ? action.assert : undefined
   const assertionErrors = useMemo(() => {
-    if (!action.assert) return null
+    if (!actionAssert) return null
     
     // Description is only required in setup, optional in tests
-    const { description, response } = action.assert
+    const firstAssert = Array.isArray(actionAssert) ? actionAssert[0] : actionAssert
+    const { description, response } = firstAssert as TestScriptSetupActionAssert
     return {
       description: sectionType === "setup" && !description?.trim() ? "Description required" : undefined,
       response: sectionType === "setup" && !response ? "Select expected response" : undefined,
     }
-  }, [action.assert, sectionType])
+  }, [actionAssert, sectionType])
 
   const updateOperation = (partial: Partial<TestScriptSetupActionOperation>) => {
     updateAction({
@@ -343,9 +345,9 @@ export default function ActionComponent<TAction extends ScriptAction>({
 
   // Get assertions as array (support both single and multiple assertions)
   const assertions = useMemo<TestScriptSetupActionAssert[]>(() => {
-    if (!action.assert) return []
-    return Array.isArray(action.assert) ? action.assert : [action.assert]
-  }, [action.assert])
+    if (!actionAssert) return []
+    return Array.isArray(actionAssert) ? actionAssert : [actionAssert]
+  }, [actionAssert])
 
   const addAssertion = () => {
     const newAssertion: TestScriptSetupActionAssert = {
@@ -818,14 +820,17 @@ export default function ActionComponent<TAction extends ScriptAction>({
           {assertions.length > 0 ? (
             <div className="space-y-3">
               {assertions.map((assertion, idx) => (
-                <SimpleAssertionForm
+                <AssertionComponent
                   key={idx}
                   assertion={assertion}
                   updateAssertion={(updated) => updateAssertion(idx, updated)}
                   removeAssertion={() => removeAssertion(idx)}
-                  responseOptions={RESPONSE_OPTIONS}
-                  directionOptions={ASSERTION_DIRECTIONS}
-                  operatorOptions={ASSERTION_OPERATORS}
+                  responseOptions={RESPONSE_OPTIONS.map((v) => ({ value: v!, label: v! }))}
+                  directionOptions={ASSERTION_DIRECTIONS.map((v) => ({ value: v!, label: v! }))}
+                  operatorOptions={ASSERTION_OPERATORS.map((v) => ({ value: v!, label: v! }))}
+                  requestMethodOptions={REQUEST_METHOD_OPTIONS.map((v) => ({ value: v!, label: v! }))}
+                  onAddRequirement={addRequirement}
+                  onRemoveRequirement={removeRequirement}
                   errors={assertionErrors ?? undefined}
                 />
               ))}

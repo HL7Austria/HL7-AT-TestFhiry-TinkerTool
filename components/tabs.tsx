@@ -2,7 +2,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TestScript } from "@/types/fhir-enhanced";
 import { JsonView } from "./json-view";
 import { XmlView } from "./xml-view";
-import { ValidationTab } from "./validation-tab";
 import { useFhirValidation } from "@/hooks/use-fhir-validation";
 
 interface StructuredViewProps {

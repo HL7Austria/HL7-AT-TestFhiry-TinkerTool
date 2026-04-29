@@ -21,13 +21,13 @@ import {
   Settings2
 } from "lucide-react"
 import { testFixtureFeatures } from "@/lib/test-fixture-features"
-import type { IGConfiguration, IGSource } from "@/types/ig-types"
+import type { IGConfiguration } from "@/types/ig-types"
 
 interface TestResult {
   success: boolean
   message: string
   error?: string
-  details?: any
+  details?: Record<string, unknown>
 }
 
 interface TestResults {
@@ -337,7 +337,7 @@ export function FixtureTestPanel({ igConfiguration }: FixtureTestPanelProps) {
           <Alert>
             <Clock className="h-4 w-4" />
             <AlertDescription>
-              Klicke auf "Tests starten" um eine umfassende Überprüfung aller 
+              Klicke auf &quot;Tests starten&quot; um eine umfassende Überprüfung aller 
               Fixture-Features durchzuführen. Die Tests prüfen IG-Konfiguration, 
               Example-Parsing, Filtering, Fixture-Generierung und Performance.
             </AlertDescription>

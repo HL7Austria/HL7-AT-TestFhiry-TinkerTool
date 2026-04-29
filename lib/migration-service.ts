@@ -5,7 +5,7 @@
  */
 
 import type { TestScript } from "@/types/fhir-enhanced"
-import { FhirVersion, DEFAULT_FHIR_VERSION } from "@/types/fhir-config"
+import { FhirVersion } from "@/types/fhir-config"
 
 /**
  * Migration result interface
@@ -119,7 +119,7 @@ function migrateR4ToR5(script: TestScript, result: MigrationResult): void {
  * Validiert TestScript für bestimmte FHIR Version
  * Rückwärtskompatibilität durch Context-Version
  */
-export function validateTestScriptForVersion(testScript: TestScript, version: FhirVersion): TestScript {
+export function validateTestScriptForVersion(testScript: TestScript, _version: FhirVersion): TestScript {
   // TestScript ist bereits FHIR-konform, keine zusätzlichen Properties nötig
   return testScript
 }

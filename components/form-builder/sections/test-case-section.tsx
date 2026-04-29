@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, startTransition } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
-import { FlaskConical, Plus, Trash2, TestTube2 } from "lucide-react"
+import { Plus, Trash2, TestTube2 } from "lucide-react"
 import type { TestScriptTest, TestScriptTestAction } from "@/types/fhir-enhanced"
 import { cn } from "@/lib/utils"
 import ActionComponent from "../shared/action-component"
@@ -32,11 +32,13 @@ export function TestCaseSection({
   const [activeActionIndex, setActiveActionIndex] = useState(0)
 
   useEffect(() => {
-    if (actions.length === 0) {
-      setActiveActionIndex(0)
-      return
-    }
-    setActiveActionIndex((prev) => Math.min(prev, actions.length - 1))
+    startTransition(() => {
+      if (actions.length === 0) {
+        setActiveActionIndex(0)
+        return
+      }
+      setActiveActionIndex((prev) => Math.min(prev, actions.length - 1))
+    })
   }, [actions.length])
 
   const updateField = <K extends keyof TestScriptTest>(field: K, value: TestScriptTest[K]) => {
@@ -90,9 +92,10 @@ export function TestCaseSection({
 
   const getActionTitle = (action: TestScriptTestAction, index: number) => {
     if (action.operation?.label) return action.operation.label
-    if (action.assert?.label) return action.assert.label
+    const firstAssert = Array.isArray(action.assert) ? action.assert[0] : action.assert
+    if (firstAssert?.label) return firstAssert.label
     if (action.operation?.resource) return `Operation ${action.operation.resource}`
-    if (action.assert?.description) return action.assert.description
+    if (firstAssert?.description) return firstAssert.description
     return `Action ${index + 1}`
   }
 
@@ -184,7 +187,7 @@ export function TestCaseSection({
                           </Badge>
                         </div>
                         <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                          {action.operation?.description || action.assert?.description || "No description"}
+                          {action.operation?.description || (Array.isArray(action.assert) ? action.assert[0]?.description : action.assert?.description) || "No description"}
                         </p>
                       </button>
                     )

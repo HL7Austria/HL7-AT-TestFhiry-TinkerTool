@@ -1,6 +1,6 @@
 "use client"
 
-import { TestScript } from "@/types/fhir-enhanced"
+import { TestScript, ValidationResult } from "@/types/fhir-enhanced"
 import SyntaxHighlighter from "./syntax-highlighter"
 import { Button } from "./ui/button"
 import { ClipboardCopy, Download } from "lucide-react"
@@ -12,7 +12,7 @@ import { Badge } from "./ui/badge"
 
 // Type für Validierungsstate - optional  
 interface ValidationState {
-  validationResult: any
+  validationResult: ValidationResult | null
   isValidating: boolean
   validate: (testScript: TestScript) => void
   serverError: string | null
@@ -26,7 +26,7 @@ interface XmlViewProps {
   validationState?: ValidationState
 }
 
-export function XmlView({ testScript, validationState }: XmlViewProps) {
+export function XmlView({ testScript, validationState: _validationState }: XmlViewProps) {
   const { currentVersion } = useFhirVersion()
   
   // Validation errors are NOT shown in XML, as line numbers don't match
