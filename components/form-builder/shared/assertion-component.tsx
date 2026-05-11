@@ -79,6 +79,12 @@ export function AssertionComponent({
     updateField("requirement", onRemoveRequirement(assertion.requirement, index))
   }
 
+  const hasCompareSourceId = Boolean(assertion.compareToSourceId)
+  const hasComparePath = Boolean(assertion.compareToSourcePath)
+  const hasCompareExpression = Boolean(assertion.compareToSourceExpression)
+  const compareSourceMissingId = !hasCompareSourceId && (hasComparePath || hasCompareExpression)
+  const compareSourceBothSet = hasComparePath && hasCompareExpression
+
   return (
     <Card className="space-y-4 bg-muted/30 p-4">
       <div className="flex items-center justify-between">
@@ -250,7 +256,7 @@ export function AssertionComponent({
             id="assertion-path"
             value={assertion.path ?? ""}
             onChange={(event) => updateField("path", event.target.value || undefined)}
-            placeholder="FHIRPath"
+            placeholder="XPath / JsonPath"
           />
         </div>
         <div>
@@ -272,6 +278,7 @@ export function AssertionComponent({
             onChange={(event) =>
               updateField("compareToSourceId", event.target.value || undefined)
             }
+            className={cn(compareSourceMissingId && "border-destructive focus-visible:ring-destructive")}
           />
         </div>
         <div>
@@ -282,7 +289,9 @@ export function AssertionComponent({
             onChange={(event) =>
               updateField("compareToSourcePath", event.target.value || undefined)
             }
+            className={cn((compareSourceMissingId && hasComparePath || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
           />
+          <p className="text-xs text-muted-foreground">XPath / JsonPath</p>
         </div>
         <div>
           <Label htmlFor="assertion-compare-expression">Compare Expression</Label>
@@ -292,9 +301,17 @@ export function AssertionComponent({
             onChange={(event) =>
               updateField("compareToSourceExpression", event.target.value || undefined)
             }
+            className={cn((compareSourceMissingId && hasCompareExpression || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
           />
+          <p className="text-xs text-muted-foreground">FHIRPath</p>
         </div>
       </div>
+      {compareSourceMissingId && (
+        <p className="text-xs text-destructive">compareToSourceId ist erforderlich wenn Expression oder Path gesetzt sind.</p>
+      )}
+      {compareSourceBothSet && (
+        <p className="text-xs text-destructive">Nur compareToSourceExpression oder compareToSourcePath darf gesetzt sein, nicht beides gleichzeitig.</p>
+      )}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
