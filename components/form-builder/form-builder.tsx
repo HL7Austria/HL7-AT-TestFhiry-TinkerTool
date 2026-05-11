@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  startTransition,
   type ReactNode,
 } from "react"
 import { Badge } from "@/components/ui/badge"
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { CheckCircle2, Circle, Plus, TestTube, Trash2 } from "lucide-react"
+import { CheckCircle2, Circle, Plus } from "lucide-react"
 import type { TestScript, TestScriptTest } from "@/types/fhir-enhanced"
 import { ProgressIndicator } from "./progress-indicator"
 import BasicInfoSection from "./sections/basic-info-section"
@@ -148,11 +149,13 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
   )
 
   useEffect(() => {
-    if (tests.length === 0) {
-      setActiveTestIndex(0)
-      return
-    }
-    setActiveTestIndex((prev) => Math.min(prev, tests.length - 1))
+    startTransition(() => {
+      if (tests.length === 0) {
+        setActiveTestIndex(0)
+        return
+      }
+      setActiveTestIndex((prev) => Math.min(prev, tests.length - 1))
+    })
   }, [tests.length])
 
   const addTestCase = useCallback(() => {

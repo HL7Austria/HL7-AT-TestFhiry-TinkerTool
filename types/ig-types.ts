@@ -163,7 +163,7 @@ export interface IGSource {
   /** Whether this source is enabled */
   enabled: boolean
   /** Source type */
-  type: 'hl7-austria' | 'simplifier' | 'custom'
+  type: 'hl7-austria' | 'hl7-international' | 'simplifier' | 'custom'
   /** Additional configuration */
   config?: {
     /** API endpoints */

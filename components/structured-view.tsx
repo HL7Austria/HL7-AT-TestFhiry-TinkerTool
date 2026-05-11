@@ -11,6 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ValidationTab } from "@/components/validation-tab"
 import { AlertCircle, CheckCircle2, Info, Layers, XCircle } from "lucide-react"
+import { useFhirValidation } from "@/hooks/use-fhir-validation"
 
 interface StructuredViewProps {
   testScript: TestScript;
@@ -20,6 +21,7 @@ interface StructuredViewProps {
  * Displays a TestScript in a structured, user-friendly view
  */
 export function StructuredView({ testScript }: StructuredViewProps) {
+  const validationState = useFhirValidation()
   const testCount = testScript.test?.length ?? 0
   const testActionCount =
     testScript.test?.reduce((sum, test) => sum + (test.action?.length ?? 0), 0) ?? 0
@@ -190,7 +192,7 @@ export function StructuredView({ testScript }: StructuredViewProps) {
         </TabsContent>
 
         <TabsContent value="validation" className="space-y-4">
-          <ValidationTab testScript={testScript} />
+          <ValidationTab testScript={testScript} {...validationState} />
         </TabsContent>
       </Tabs>
     </div>
@@ -573,7 +575,7 @@ function ConfigurationSection({ testScript }: { testScript: TestScript }) {
           <CardContent className="space-y-2 text-sm">
             {testScript.profile?.map((profile, idx) => (
               <div key={idx} className="rounded border p-2 font-mono text-xs break-all">
-                {profile}
+                {profile.reference}
               </div>
             ))}
           </CardContent>

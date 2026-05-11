@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Settings } from "lucide-react"
 import { useSettings } from "@/lib/settings-context"
-import { Separator } from "@/components/ui/separator"
 
 /**
  * Settings Dialog for optional features

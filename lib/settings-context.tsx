@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react'
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, startTransition } from 'react'
 
 interface AppSettings {
   showMetadataCapabilities: boolean
@@ -37,7 +37,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
         const parsed = JSON.parse(stored)
-        setSettings({ ...DEFAULT_SETTINGS, ...parsed })
+        startTransition(() => setSettings({ ...DEFAULT_SETTINGS, ...parsed }))
       }
     } catch (error) {
       console.error('Failed to load settings:', error)

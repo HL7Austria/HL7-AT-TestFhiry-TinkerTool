@@ -93,7 +93,7 @@ function enhanceFhirResponse(fhirResponse: OperationOutcome, originalJson: strin
     const { line, column } = extractLineAndColumn(issue, formattedJson);
     
     // Verbessere die Fehlermeldung
-    let message = issue.diagnostics || issue.details?.text || "Unbekannter Validierungsfehler";
+    const message = issue.diagnostics || issue.details?.text || "Unbekannter Validierungsfehler";
     
     // Note: Keeping error messages from FHIR server in original language
     // for consistency with FHIR specification
@@ -451,7 +451,8 @@ function validateExtendedStructure(testScript: TestScript) {
 
           // Validate Assertion if present
           if (action.assert) {
-            if (!action.assert.description) {
+            const firstAssert = Array.isArray(action.assert) ? action.assert[0] : action.assert
+            if (!firstAssert?.description) {
               errors.push({
                 message: `Test ${testIndex + 1}, Action ${actionIndex + 1}: Assertion requires a description`,
                 location: ['test', testIndex.toString(), 'action', actionIndex.toString(), 'assert', 'description'],

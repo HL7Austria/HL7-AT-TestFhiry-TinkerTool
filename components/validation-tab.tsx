@@ -29,7 +29,7 @@ interface ValidationTabProps {
   currentFhirVersion: FhirVersion;
   // New props for Request/Response display
   lastRequestPayload: TestScript | null;
-  lastServerResponse: any | null;
+  lastServerResponse: Record<string, unknown> | null;
 }
 
 export function ValidationTab({ 
@@ -106,7 +106,7 @@ export function ValidationTab({
     const issueText = issue.details?.text || issue.diagnostics || "Unknown error";
     const hasLine = issue.line && issue.line > 0;
     const hasColumn = issue.column && issue.column > 0;
-    const hasPosition = hasLine || hasColumn;
+    const _hasPosition = hasLine || hasColumn;
     const locationPath = getLocationDisplayPath(issue.location, issue.expression);
     const hasLocation = locationPath && locationPath !== "Unknown position";
     

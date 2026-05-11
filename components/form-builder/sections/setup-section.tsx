@@ -27,6 +27,21 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
     })
   }
 
+  const addSetupAssertionAction = () => {
+    const newAction: TestScriptSetupAction = {
+      assert: {
+        description: "",
+        response: "okay",
+        warningOnly: false,
+        stopTestOnFail: true,
+      },
+    }
+    updateSetup({
+      ...setup,
+      action: [...actions, newAction],
+    })
+  }
+
   const updateAction = (index: number, action: TestScriptSetupAction) => {
     const next = [...actions]
     next[index] = action
@@ -46,10 +61,14 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
 
   return (
     <div className="space-y-4 p-2">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-2">
         <Button variant="outline" size="sm" onClick={addSetupAction} className="flex items-center gap-1">
           <Plus className="h-4 w-4" />
-          Add Setup Action
+          Add Operation
+        </Button>
+        <Button variant="outline" size="sm" onClick={addSetupAssertionAction} className="flex items-center gap-1">
+          <Plus className="h-4 w-4" />
+          Add Assertion
         </Button>
       </div>
 

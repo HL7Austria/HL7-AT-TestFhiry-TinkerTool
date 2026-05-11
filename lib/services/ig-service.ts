@@ -18,7 +18,7 @@ import { getIGConfigStorage } from "./ig-config-storage"
  * Provides functionality to load IG metadata, parse Example Instances, and search resources
  */
 export class IGService {
-  private memoryCache = new Map<string, any>()
+  private memoryCache = new Map<string, IGMetadata | ExampleInstance[]>()
   private cacheService = getCacheService()
   private configStorage = getIGConfigStorage()
   private readonly defaultTimeout = 10000 // 10 seconds
@@ -81,7 +81,7 @@ export class IGService {
       if (this.memoryCache.has(cacheKey)) {
         return {
           success: true,
-          data: this.memoryCache.get(cacheKey)
+          data: this.memoryCache.get(cacheKey) as IGMetadata
         }
       }
 
@@ -185,7 +185,7 @@ export class IGService {
       if (this.memoryCache.has(cacheKey)) {
         return {
           success: true,
-          data: this.memoryCache.get(cacheKey)
+          data: this.memoryCache.get(cacheKey) as ExampleInstance[]
         }
       }
 
@@ -365,7 +365,7 @@ export class IGService {
     filter: ExampleInstanceFilter = {}
   ): Promise<ExampleInstanceSearchResult> {
     const startTime = Date.now()
-    let allInstances: ExampleInstance[] = []
+    const allInstances: ExampleInstance[] = []
 
     // Load examples from all enabled sources
     for (const source of sources.filter(s => s.enabled)) {

@@ -13,6 +13,7 @@ import {
   TestScriptSetup,
   TestScriptSetupAction,
   TestScriptTeardown,
+  TestScriptSetupActionAssert,
   TestScriptTeardownAction,
   TestScriptTest,
   TestScriptTestAction,
@@ -42,6 +43,11 @@ const hasAssertion = (action: ScriptAction): action is TestScriptSetupAction | T
 
 const includesTerm = (value: string | undefined, term: string) => value?.toLowerCase().includes(term) ?? false
 
+const getFirstAssert = (action: ScriptAction): TestScriptSetupActionAssert | undefined => {
+  if (!('assert' in action) || !action.assert) return undefined
+  return Array.isArray(action.assert) ? action.assert[0] : action.assert
+}
+
 const matchesAction = (action: ScriptAction, options: FilterOptions): boolean => {
   const { showAssertions, showOperations, term, type } = options
 
@@ -59,19 +65,19 @@ const matchesAction = (action: ScriptAction, options: FilterOptions): boolean =>
 
   if (type === "all" || type === "description") {
     if (includesTerm(action.operation?.description, term)) return true
-    if (hasAssertion(action) && includesTerm(action.assert?.description, term)) return true
+    if (hasAssertion(action) && includesTerm(getFirstAssert(action)?.description, term)) return true
   }
 
   if (type === "all" || type === "name") {
     if (includesTerm(action.operation?.label, term)) return true
-    if (hasAssertion(action) && includesTerm(action.assert?.label, term)) return true
+    if (hasAssertion(action) && includesTerm(getFirstAssert(action)?.label, term)) return true
   }
 
   if (type === "all" || type === "action") {
     if (includesTerm(action.operation?.url, term)) return true
     if (includesTerm(action.operation?.resource, term)) return true
-    if (hasAssertion(action) && includesTerm(action.assert?.expression, term)) return true
-    if (hasAssertion(action) && includesTerm(action.assert?.value, term)) return true
+    if (hasAssertion(action) && includesTerm(getFirstAssert(action)?.expression, term)) return true
+    if (hasAssertion(action) && includesTerm(getFirstAssert(action)?.value, term)) return true
   }
 
   return false
@@ -402,7 +408,7 @@ export function TestScriptFilteredView({ testScript }: TestScriptFilteredViewPro
                           {hasAssertion(action) && action.assert && (
                             <span className="text-green-600">
                               {" "}
-                              | Assertion: {action.assert.label || action.assert.description || "Unbenannt"}
+                              | Assertion: {getFirstAssert(action)?.label || getFirstAssert(action)?.description || "Unbenannt"}
                             </span>
                           )}
                         </li>
@@ -432,7 +438,7 @@ export function TestScriptFilteredView({ testScript }: TestScriptFilteredViewPro
                                 {hasAssertion(action) && action.assert && (
                                   <span className="text-green-600">
                                     {" "}
-                                    | Assertion: {action.assert.label || action.assert.description || "Unbenannt"}
+                                    | Assertion: {getFirstAssert(action)?.label || getFirstAssert(action)?.description || "Unbenannt"}
                                   </span>
                                 )}
                               </li>
@@ -482,7 +488,7 @@ export function TestScriptFilteredView({ testScript }: TestScriptFilteredViewPro
                                 {hasAssertion(action) && action.assert && (
                                   <span className="text-green-600">
                                     {" "}
-                                    | Assertion: {action.assert.label || action.assert.description || "Unbenannt"}
+                                    | Assertion: {getFirstAssert(action)?.label || getFirstAssert(action)?.description || "Unbenannt"}
                                   </span>
                                 )}
                               </li>
