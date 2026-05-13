@@ -28,7 +28,6 @@ import { ProfilesSection } from "./sections/profiles-section"
 import { VariablesSection } from "./sections/variables-section"
 import { ScopeSection } from "./sections/scope-section"
 import { useFhirVersion } from "@/lib/fhir-version-context"
-import { useSettings } from "@/lib/settings-context"
 
 type SectionKey =
   | "basic-info"
@@ -88,7 +87,6 @@ interface FormBuilderProps {
 
 function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilderProps) {
   const { currentVersion } = useFhirVersion()
-  const { settings } = useSettings()
   const [activeSection, setActiveSection] = useState<SectionKey>("basic-info")
   const [activeTestIndex, setActiveTestIndex] = useState(0)
 
@@ -105,10 +103,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       infrastructureSections.push("scope")
     }
 
-    const overviewSections: SectionKey[] = ["basic-info"]
-    if (settings.showMetadataCapabilities) {
-      overviewSections.push("metadata")
-    }
+    const overviewSections: SectionKey[] = ["basic-info", "metadata"]
 
     return [
       {
@@ -127,7 +122,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
         sections: ["setup", "tests", "teardown"],
       },
     ]
-  }, [isR5, settings.showMetadataCapabilities])
+  }, [isR5])
 
   const metadata = useMemo(() => testScript.metadata ?? { capability: [] }, [testScript.metadata])
   const tests = useMemo(() => testScript.test ?? [], [testScript.test])
@@ -249,7 +244,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       case "basic-info":
         return <BasicInfoSection testScript={testScript} updateTestScript={updateTestScript} />
       case "metadata":
-        if (!settings.showMetadataCapabilities) return null
         return (
           <MetadataSection
             metadata={metadata}
