@@ -21,7 +21,7 @@ import { useMemo, useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { SimpleAssertionForm } from "./simple-assertion-form"
 
-type SectionType = "setup" | "test" | "teardown" | "common"
+type SectionType = "setup" | "test" | "teardown"
 type ScriptAction = TestScriptSetupAction | TestScriptTestAction | TestScriptTeardownAction
 
 const HTTP_METHODS: Array<TestScriptSetupActionOperation["method"]> = [
@@ -802,7 +802,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
         </>
       )}
 
-      {((sectionType === "test" || sectionType === "common") || isAssertionOnly) && (
+      {(sectionType === "test" || isAssertionOnly) && (
         <div className="space-y-3 border-t pt-4">
           <div className="flex items-center justify-between">
             <h5 className="text-sm font-medium">

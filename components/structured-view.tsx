@@ -6,7 +6,6 @@ import {
   TestScriptSetup,
   TestScriptTeardown,
   TestScriptTest,
-  TestScriptCommon,
 } from "@/types/fhir-enhanced"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ValidationTab } from "@/components/validation-tab"
@@ -122,12 +121,11 @@ export function StructuredView({ testScript }: StructuredViewProps) {
 
       {/* Main content with tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="config">Configuration</TabsTrigger>
           <TabsTrigger value="tests">Tests</TabsTrigger>
           <TabsTrigger value="setup">Setup</TabsTrigger>
-          <TabsTrigger value="common">Common</TabsTrigger>
           <TabsTrigger value="validation">Validation</TabsTrigger>
         </TabsList>
 
@@ -183,10 +181,6 @@ export function StructuredView({ testScript }: StructuredViewProps) {
         <TabsContent value="setup" className="space-y-4">
           <SetupSection setup={testScript.setup} />
           <TeardownSection teardown={testScript.teardown} />
-        </TabsContent>
-
-        <TabsContent value="common" className="space-y-4">
-          <CommonActionsSection common={testScript.common} />
         </TabsContent>
 
         <TabsContent value="validation" className="space-y-4">
@@ -348,87 +342,6 @@ function TestSection({ tests }: { tests: TestScriptTest[] | undefined }) {
       ))}
     </div>
   );
-}
-
-function CommonActionsSection({ common }: { common: TestScriptCommon[] | undefined }) {
-  if (!common || common.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <Info className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-          <p className="text-muted-foreground">No common actions defined</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <div className="space-y-4">
-      {common.map((entry, idx) => (
-        <Card key={idx}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {entry.name || entry.key || `Common ${idx + 1}`}
-              <Badge variant="outline">{entry.key}</Badge>
-            </CardTitle>
-            {entry.description && <CardDescription>{entry.description}</CardDescription>}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {entry.parameter && entry.parameter.length > 0 && (
-              <div className="space-y-2">
-                <h5 className="text-sm font-medium">Parameter</h5>
-                <div className="grid gap-2 md:grid-cols-2">
-                  {entry.parameter.map((param, paramIdx) => (
-                    <div key={paramIdx} className="rounded-md border p-2 text-sm">
-                      <p className="font-medium">{param.name}</p>
-                      {param.value && (
-                        <p className="text-muted-foreground">Wert: {param.value}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {entry.action && entry.action.length > 0 ? (
-              <div className="space-y-3">
-                {entry.action.map((action, actionIdx) => (
-                  <div key={actionIdx} className="rounded-lg border p-3">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="font-medium">Action {actionIdx + 1}</span>
-                      <Badge variant="outline">Common</Badge>
-                    </div>
-                    {action.operation && (
-                      <div className="space-y-1 text-sm">
-                        <p>
-                          <span className="font-medium">Method:</span>{" "}
-                          {action.operation.method || "Not set"}
-                        </p>
-                        <p>
-                          <span className="font-medium">URL:</span>{" "}
-                          {action.operation.url || "Not set"}
-                        </p>
-                      </div>
-                    )}
-                    {action.assert && (
-                      <div className="mt-2 rounded bg-muted p-2 text-sm">
-                        <p>
-                          <span className="font-medium">Assertion:</span>{" "}
-                          {action.assert.description || "No description"}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No actions in this common block.</p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  )
 }
 
 function ConfigurationSection({ testScript }: { testScript: TestScript }) {

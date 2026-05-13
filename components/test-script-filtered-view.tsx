@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   TestScript,
-  TestScriptCommon,
   TestScriptSetup,
   TestScriptSetupAction,
   TestScriptTeardown,
@@ -22,7 +21,7 @@ import { formatToJson } from "@/lib/formatters/json-formatter"
 import { Check, Filter, Search, X } from "lucide-react"
 
 type FilterTypeOption = "all" | "name" | "description" | "action"
-type SectionFilterOption = "all" | "setup" | "test" | "teardown" | "common"
+type SectionFilterOption = "all" | "setup" | "test" | "teardown"
 
 type ScriptAction = TestScriptSetupAction | TestScriptTestAction | TestScriptTeardownAction
 
@@ -138,24 +137,6 @@ const filterTestCase = (testCase: TestScriptTest, options: FilterOptions): TestS
   return { ...testCase, action }
 }
 
-const filterCommonSection = (common: TestScriptCommon, options: FilterOptions): TestScriptCommon => {
-  const { term, type } = options
-  let matchesParent = term === ""
-
-  if (!matchesParent) {
-    if ((type === "all" || type === "name") && includesTerm(common.name, term)) {
-      matchesParent = true
-    }
-
-    if ((type === "all" || type === "description") && includesTerm(common.description, term)) {
-      matchesParent = true
-    }
-  }
-
-  const action = filterActionList(common.action, options, matchesParent)
-  return { ...common, action }
-}
-
 /**
  * Component for filtered display of TestScript contents
  */
@@ -202,12 +183,6 @@ export function TestScriptFilteredView({ testScript }: TestScriptFilteredViewPro
       result.teardown = filterTeardownSection(testScript.teardown, filterOptions)
     }
 
-    if (filterSection === "all" || filterSection === "common") {
-      result.common = testScript.common
-        ?.map((common) => filterCommonSection(common, filterOptions))
-        .filter((common) => (common.action?.length ?? 0) > 0)
-    }
-
     if (filterSection === "all") {
       if (testScript.testSystem) {
         result.testSystem = testScript.testSystem
@@ -246,12 +221,6 @@ export function TestScriptFilteredView({ testScript }: TestScriptFilteredViewPro
       testCount += filteredContent.test.length
       filteredContent.test.forEach((testCase) => {
         actionCount += testCase.action?.length ?? 0
-      })
-    }
-
-    if (filteredContent.common) {
-      filteredContent.common.forEach((common) => {
-        actionCount += common.action?.length ?? 0
       })
     }
 
@@ -326,7 +295,6 @@ export function TestScriptFilteredView({ testScript }: TestScriptFilteredViewPro
                     <SelectItem value="setup">Setup</SelectItem>
                     <SelectItem value="test">Tests</SelectItem>
                     <SelectItem value="teardown">Teardown</SelectItem>
-                    <SelectItem value="common">Common</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -458,39 +426,6 @@ export function TestScriptFilteredView({ testScript }: TestScriptFilteredViewPro
                         </li>
                       ))}
                     </ul>
-                  </div>
-                )}
-
-                {filteredContent.common && filteredContent.common.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-medium mb-2">Common</h3>
-                    {filteredContent.common.map((common, commonIndex) => (
-                      <div key={`common-${commonIndex}`} className="mb-3">
-                        <h4 className="font-medium text-md">{common.name || `Common ${common.key}`}</h4>
-                        {common.description && (
-                          <p className="text-sm text-muted-foreground mb-1">{common.description}</p>
-                        )}
-                        {common.action && common.action.length > 0 && (
-                          <ul className="ml-4 list-disc list-inside space-y-1 text-sm">
-                            {common.action.map((action, actionIndex) => (
-                              <li key={`common-${commonIndex}-action-${actionIndex}`}>
-                                {action.operation && (
-                                  <span className="text-blue-600">
-                                    Operation: {action.operation.label || action.operation.resource || "Unbenannt"}
-                                  </span>
-                                )}
-                                {hasAssertion(action) && action.assert && (
-                                  <span className="text-green-600">
-                                    {" "}
-                                    | Assertion: {action.assert.label || action.assert.description || "Unbenannt"}
-                                  </span>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    ))}
                   </div>
                 )}
 

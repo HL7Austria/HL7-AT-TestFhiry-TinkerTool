@@ -73,27 +73,13 @@ export interface TestSystem {
   url?: string;
 }
 
-export interface TestScriptCommonParameter {
-  name?: string;
-  value?: string;
-}
-
 export interface TestScriptProfile {
   id: string;
   reference: string;
 }
 
-export interface TestScriptCommon {
-  key: string;
-  name?: string;
-  description?: string;
-  parameter?: TestScriptCommonParameter[];
-  action: TestScriptTestAction[];
-}
-
 export type TestScript = FhirTestScript & {
   testSystem?: TestSystem[];
-  common?: TestScriptCommon[];
   profile?: TestScriptProfile[];
 };
 

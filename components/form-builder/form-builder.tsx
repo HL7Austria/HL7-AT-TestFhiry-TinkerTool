@@ -27,7 +27,6 @@ import { FixturesSection } from "./sections/fixtures-section"
 import { ProfilesSection } from "./sections/profiles-section"
 import { VariablesSection } from "./sections/variables-section"
 import { ScopeSection } from "./sections/scope-section"
-import { CommonSection } from "./sections/common-section"
 import { useFhirVersion } from "@/lib/fhir-version-context"
 import { useSettings } from "@/lib/settings-context"
 
@@ -41,7 +40,6 @@ type SectionKey =
   | "setup"
   | "tests"
   | "teardown"
-  | "common"
 
 const SECTION_DETAILS: Record<SectionKey, { title: string; description: string }> = {
   "basic-info": {
@@ -79,10 +77,6 @@ const SECTION_DETAILS: Record<SectionKey, { title: string; description: string }
   teardown: {
     title: "Teardown",
     description: "Cleanup operations after test completion.",
-  },
-  common: {
-    title: "Common Actions",
-    description: "Reusable actions referenced by keys.",
   },
 }
 
@@ -130,7 +124,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       {
         id: "execution",
         title: "Execution",
-        sections: ["setup", "tests", "teardown", "common"],
+        sections: ["setup", "tests", "teardown"],
       },
     ]
   }, [isR5, settings.showMetadataCapabilities])
@@ -208,8 +202,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
     const hasTests =
       tests.length > 0 && tests.every((test) => (test.action?.length ?? 0) > 0)
     const hasTeardown = Boolean(testScript.teardown?.action?.length)
-    const hasCommon = Boolean(testScript.common?.length)
-
     return {
       "basic-info": hasBasicInfo,
       metadata: hasMetadata,
@@ -220,7 +212,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       setup: hasSetup,
       tests: hasTests,
       teardown: hasTeardown,
-      common: hasCommon,
     }
   }, [metadata, testScript, tests])
 
@@ -335,13 +326,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
             teardown={testScript.teardown ?? { action: [] }}
             updateTeardown={(value) => updateSection("teardown", value)}
             availableFixtures={availableFixtures}
-          />
-        )
-      case "common":
-        return (
-          <CommonSection
-            common={testScript.common}
-            updateCommon={(value) => updateSection("common", value)}
           />
         )
       default:
