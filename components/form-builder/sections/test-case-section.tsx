@@ -61,7 +61,6 @@ export function TestCaseSection({
   const addAssertionAction = () => {
     const newAction: TestScriptTestAction = {
       assert: {
-        description: "",
         response: "okay",
         warningOnly: false,
         stopTestOnFail: true,

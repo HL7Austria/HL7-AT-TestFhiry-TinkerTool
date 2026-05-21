@@ -30,7 +30,6 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
   const addSetupAssertionAction = () => {
     const newAction: TestScriptSetupAction = {
       assert: {
-        description: "",
         response: "okay",
         warningOnly: false,
         stopTestOnFail: true,

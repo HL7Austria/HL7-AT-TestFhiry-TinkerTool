@@ -87,7 +87,6 @@ const removeParameter = (entry: TestScriptCommon, parameterIdx: number): TestScr
       ...(entry.action ?? []),
       {
         assert: {
-          description: "",
           response: "okay",
           warningOnly: false,
           stopTestOnFail: true,
