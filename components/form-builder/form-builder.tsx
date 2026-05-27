@@ -359,7 +359,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
         sectionCompleteness={progressCompleteness}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
         <Card className="relative flex flex-col overflow-hidden p-4">
           <div className="relative z-10 space-y-4">
             <div>
@@ -484,7 +484,7 @@ const TestsPanel = memo(function TestsPanel({
           No test cases defined yet. Create your first test case to add actions.
         </Card>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
+        <div className="grid gap-4 lg:grid-cols-[200px_1fr]">
           <Card className="p-3">
             <ScrollArea className="h-[360px] pr-2">
               <div className="space-y-2">
@@ -519,7 +519,7 @@ const TestsPanel = memo(function TestsPanel({
             </ScrollArea>
           </Card>
 
-          <Card className="p-4">
+          <Card className="min-w-0 overflow-hidden p-4">
             {activeTest ? (
               <TestCaseSection
                 test={activeTest}
