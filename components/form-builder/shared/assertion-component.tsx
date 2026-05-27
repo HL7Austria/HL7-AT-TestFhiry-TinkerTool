@@ -122,13 +122,14 @@ export function AssertionComponent({
         <div>
           <Label htmlFor="assertion-direction">Direction</Label>
           <Select
-            value={assertion.direction ?? ""}
-            onValueChange={(value) => updateField("direction", value as typeof assertion.direction)}
+            value={assertion.direction ?? "__none__"}
+            onValueChange={(value) => updateField("direction", value === "__none__" ? undefined : value as typeof assertion.direction)}
           >
             <SelectTrigger id="assertion-direction">
               <SelectValue placeholder="Select direction" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none__">-- None --</SelectItem>
               {directionOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -140,14 +141,15 @@ export function AssertionComponent({
         <div>
           <Label htmlFor="assertion-response">Expected Response</Label>
           <Select
-            value={assertion.response ?? ""}
-            onValueChange={(value) => updateField("response", value as TestScriptSetupActionAssertResponse)}
+            value={assertion.response ?? "__none__"}
+            onValueChange={(value) => updateField("response", value === "__none__" ? undefined : value as TestScriptSetupActionAssertResponse)}
             aria-invalid={Boolean(errors?.response)}
           >
             <SelectTrigger id="assertion-response">
               <SelectValue placeholder="Select response" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none__">-- None --</SelectItem>
               {responseOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -195,13 +197,14 @@ export function AssertionComponent({
         <div>
           <Label htmlFor="assertion-operator">Operator</Label>
           <Select
-            value={assertion.operator ?? ""}
-            onValueChange={(value) => updateField("operator", value as typeof assertion.operator)}
+            value={assertion.operator ?? "__none__"}
+            onValueChange={(value) => updateField("operator", value === "__none__" ? undefined : value as typeof assertion.operator)}
           >
             <SelectTrigger id="assertion-operator">
               <SelectValue placeholder="Select operator" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none__">-- None --</SelectItem>
               {operatorOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
