@@ -233,8 +233,8 @@ export default function ActionComponent<TAction extends ScriptAction>({
     // At least one of method, resource or URL is required
     if (!(operation.method ||operation.resource?.trim() || operation.url?.trim())) {
       errors.method = "HTTP method or resource type or URL required"
-      errors.resource = "Resource or method or url type required"
-      errors.url = "URL required"
+      errors.resource = "Resource or method or URL required"
+      errors.url = "URL or method or resource required"
     }
     
 
