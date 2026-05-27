@@ -147,6 +147,15 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       })),
     [testScript.fixture]
   )
+  const availableProfiles = useMemo(() => 
+    (testScript.profile ?? [])
+      .filter(p => p.id)
+      .map(p => ({
+        id: p.id,
+        reference: p.reference
+      })),
+    [testScript.profile]
+  )
 
   useEffect(() => {
     startTransition(() => {
@@ -318,6 +327,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
             setup={testScript.setup ?? { action: [] }}
             updateSetup={(value) => updateSection("setup", value)}
             availableFixtures={availableFixtures}
+            availableProfiles={availableProfiles}
           />
         )
       case "tests":
@@ -330,6 +340,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
             onRemoveTest={removeTestCase}
             onUpdateTest={updateTestCase}
             availableFixtures={availableFixtures}
+            availableProfiles={availableProfiles}
           />
         )
       case "teardown":
@@ -338,6 +349,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
             teardown={testScript.teardown ?? { action: [] }}
             updateTeardown={(value) => updateSection("teardown", value)}
             availableFixtures={availableFixtures}
+            availableProfiles={availableProfiles}
           />
         )
       case "common":
@@ -451,6 +463,7 @@ interface TestsPanelProps {
   onRemoveTest: (index: number) => void
   onUpdateTest: (index: number, test: TestScriptTest) => void
   availableFixtures?: Array<{ id: string; description?: string }>
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
 const TestsPanel = memo(function TestsPanel({
@@ -461,6 +474,7 @@ const TestsPanel = memo(function TestsPanel({
   onRemoveTest,
   onUpdateTest,
   availableFixtures = [],
+  availableProfiles = [],
 }: TestsPanelProps) {
   const activeTest = tests[activeIndex]
 
@@ -527,6 +541,7 @@ const TestsPanel = memo(function TestsPanel({
                 updateTest={(value) => onUpdateTest(activeIndex, value)}
                 removeTest={() => onRemoveTest(activeIndex)}
                 availableFixtures={availableFixtures}
+                availableProfiles={availableProfiles}
               />
             ) : (
               <p className="text-sm text-muted-foreground">

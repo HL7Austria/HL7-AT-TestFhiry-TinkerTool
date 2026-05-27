@@ -10,9 +10,10 @@ interface TeardownSectionProps {
   teardown: TestScriptTeardown
   updateTeardown: (teardown: TestScriptTeardown) => void
   availableFixtures?: Array<{ id: string; description?: string }>
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
-export default function TeardownSection({ teardown, updateTeardown, availableFixtures = [] }: TeardownSectionProps) {
+export default function TeardownSection({ teardown, updateTeardown, availableFixtures = [], availableProfiles = [] }: TeardownSectionProps) {
   const actions = teardown.action ?? []
 
   const addTeardownAction = () => {
@@ -69,6 +70,7 @@ export default function TeardownSection({ teardown, updateTeardown, availableFix
               updateAction={(updated) => updateAction(idx, updated)}
               removeAction={() => removeAction(idx)}
               availableFixtures={availableFixtures}
+              availableProfiles={availableProfiles}
             />
           ))}
         </div>

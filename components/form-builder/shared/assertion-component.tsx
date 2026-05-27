@@ -37,6 +37,7 @@ interface AssertionComponentProps {
     description?: string
     response?: string
   }
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
 export function AssertionComponent({
@@ -50,6 +51,7 @@ export function AssertionComponent({
   onAddRequirement,
   onRemoveRequirement,
   errors,
+  availableProfiles = [],
 }: AssertionComponentProps) {
   const updateField = <TKey extends keyof TestScriptSetupActionAssert>(
     field: TKey,
@@ -338,13 +340,33 @@ export function AssertionComponent({
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <div>
           <Label htmlFor="assertion-validate-profile">Validate Profile ID</Label>
-          <Input
-            id="assertion-validate-profile"
-            value={assertion.validateProfileId ?? ""}
-            onChange={(event) =>
-              updateField("validateProfileId", event.target.value || undefined)
-            }
-          />
+          {availableProfiles.length > 0 ? (
+            <Select
+              value={assertion.validateProfileId ?? "__none__"}
+              onValueChange={(value) => updateField("validateProfileId", value === "__none__" ? undefined : value)}
+            >
+              <SelectTrigger id="assertion-validate-profile">
+                <SelectValue placeholder="Select profile..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">-- None --</SelectItem>
+                {availableProfiles.map((profile) => (
+                  <SelectItem key={profile.id} value={profile.id}>
+                    {profile.id} ({profile.reference})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              id="assertion-validate-profile"
+              value={assertion.validateProfileId ?? ""}
+              onChange={(event) =>
+                updateField("validateProfileId", event.target.value || undefined)
+              }
+              placeholder="No profiles defined yet"
+            />
+          )}
         </div>
         <div>
           <Label htmlFor="assertion-minimum-id">Minimum ID</Label>

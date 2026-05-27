@@ -182,6 +182,7 @@ interface ActionComponentProps<TAction extends ScriptAction> {
   updateAction: (action: TAction) => void
   removeAction?: () => void
   availableFixtures?: Array<{ id: string; description?: string }>
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
 const ensureCoding = (coding: Coding | undefined, defaultSystem: string): Coding => ({
@@ -197,6 +198,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
   updateAction,
   removeAction,
   availableFixtures = [],
+  availableProfiles = [],
 }: ActionComponentProps<TAction>) {
   const [showCustomResourceType, setShowCustomResourceType] = useState(false)
   
@@ -375,6 +377,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
           onAddRequirement={addRequirement}
           onRemoveRequirement={removeRequirement}
           errors={assertionErrors ?? undefined}
+          availableProfiles={availableProfiles}
         />
       ) : (
         <>

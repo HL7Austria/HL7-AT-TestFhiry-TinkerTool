@@ -14,6 +14,7 @@ interface TestCaseSectionProps {
   updateTest: (test: TestScriptTest) => void
   removeTest: () => void
   availableFixtures?: Array<{ id: string; description?: string }>
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
 export function TestCaseSection({
@@ -22,6 +23,7 @@ export function TestCaseSection({
   updateTest,
   removeTest,
   availableFixtures = [],
+  availableProfiles = [],
 }: TestCaseSectionProps) {
   const actions = test.action ?? []
 
@@ -129,6 +131,7 @@ export function TestCaseSection({
                 updateAction={(updated) => updateAction(idx, updated)}
                 removeAction={() => removeAction(idx)}
                 availableFixtures={availableFixtures}
+                availableProfiles={availableProfiles}
               />
             ))}
           </div>
