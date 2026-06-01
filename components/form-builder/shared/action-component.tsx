@@ -21,7 +21,7 @@ import { useMemo, useState, useEffect, startTransition } from "react"
 import { cn } from "@/lib/utils"
 import { AssertionComponent } from "./assertion-component"
 
-type SectionType = "setup" | "test" | "teardown" | "common"
+type SectionType = "setup" | "test" | "teardown"
 type ScriptAction = TestScriptSetupAction | TestScriptTestAction | TestScriptTeardownAction
 
 const HTTP_METHODS: Array<TestScriptSetupActionOperation["method"]> = [
