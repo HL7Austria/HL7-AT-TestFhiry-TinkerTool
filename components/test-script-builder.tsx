@@ -8,6 +8,7 @@ import type { TestScript, TestScriptStatus } from "@/types/fhir-enhanced"
 import { initialTestScript } from "@/lib/initial-data"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSettings } from "@/lib/settings-context"
+import { orderTestScriptKeys } from "@/lib/testscript-key-order"
 
 /**
  * Main TestScript Builder component that manages the overall state and layout
@@ -23,7 +24,7 @@ export function TestScriptBuilder() {
    * @param newData - Partial TestScript data to merge with the current state
    */
   const updateTestScript = useCallback((newData: Partial<TestScript>) => {
-    setTestScript((prev) => ({ ...prev, ...newData }))
+    setTestScript((prev) => orderTestScriptKeys({ ...prev, ...newData }))
   }, [])
 
   /**
@@ -35,7 +36,7 @@ export function TestScriptBuilder() {
     section: K, 
     data: TestScript[K]
   ) => {
-    setTestScript((prev) => ({
+    setTestScript((prev) => orderTestScriptKeys({
       ...prev,
       [section]: data,
     }))
@@ -98,7 +99,7 @@ export function TestScriptBuilder() {
         testScript={testScript}
         isValidTestScript={isValidTestScript}
         getStatusBadgeVariant={getStatusBadgeVariant}
-        onImport={(importedScript) => setTestScript(importedScript)}
+        onImport={(importedScript) => setTestScript(orderTestScriptKeys(importedScript))}
         onClear={handleClear}
       />
 

@@ -261,6 +261,12 @@ export class IGService {
     const examples: ExampleInstance[] = []
     
     try {
+      // Guard against SSR: DOMParser is only available in the browser
+      if (typeof window === 'undefined' || typeof DOMParser === 'undefined') {
+        console.warn('DOMParser not available (SSR environment), skipping HTML parsing')
+        return examples
+      }
+
       // Create a temporary DOM parser
       const parser = new DOMParser()
       const doc = parser.parseFromString(html, 'text/html')
