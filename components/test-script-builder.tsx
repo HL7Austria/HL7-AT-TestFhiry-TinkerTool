@@ -7,7 +7,6 @@ import { OutputSection } from "./test-script-builder/output-section"
 import type { TestScript, TestScriptStatus } from "@/types/fhir-enhanced"
 import { initialTestScript } from "@/lib/initial-data"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useSettings } from "@/lib/settings-context"
 import { orderTestScriptKeys } from "@/lib/testscript-key-order"
 
 /**
@@ -17,7 +16,6 @@ import { orderTestScriptKeys } from "@/lib/testscript-key-order"
 export function TestScriptBuilder() {
   // State for the TestScript data with proper typing
   const [testScript, setTestScript] = useState<TestScript>(initialTestScript)
-  const { settings } = useSettings()
 
   /**
    * Updates the TestScript data with new values using functional updates
@@ -79,20 +77,6 @@ export function TestScriptBuilder() {
     setTestScript(initialTestScript)
   }, [])
 
-  /**
-   * Clean TestScript based on settings - remove disabled features
-   */
-  const cleanedTestScript = useMemo(() => {
-    const cleaned = { ...testScript }
-    
-    // Remove metadata if not enabled in settings
-    if (!settings.showMetadataCapabilities && cleaned.metadata) {
-      delete cleaned.metadata
-    }
-    
-    return cleaned
-  }, [testScript, settings.showMetadataCapabilities])
-
   return (
     <div className="space-y-8">
       <HeaderSection 
@@ -130,7 +114,7 @@ export function TestScriptBuilder() {
         </TabsContent>
 
         <TabsContent value="preview" className="mt-6">
-          <OutputSection testScript={cleanedTestScript} />
+          <OutputSection testScript={testScript} />
         </TabsContent>
       </Tabs>
     </div>

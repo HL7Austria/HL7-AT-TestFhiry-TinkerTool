@@ -4,7 +4,7 @@ import { Badge } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useState } from "react";
 
-type FocusArea = "all" | "setup" | "test" | "teardown" | "common";
+type FocusArea = "all" | "setup" | "test" | "teardown";
 
 interface FilteredViewProps {
   testScript: TestScript;
@@ -21,8 +21,6 @@ export function FilteredView({ testScript }: FilteredViewProps) {
     if (focusArea !== "setup") delete filtered.setup;
     if (focusArea !== "test") delete filtered.test;
     if (focusArea !== "teardown") delete filtered.teardown;
-    if (focusArea !== "common") delete filtered.common;
-    
     return filtered;
   };
 
@@ -53,7 +51,6 @@ export function FilteredView({ testScript }: FilteredViewProps) {
             <SelectItem value="setup">Setup</SelectItem>
             <SelectItem value="test">Tests</SelectItem>
             <SelectItem value="teardown">Teardown</SelectItem>
-            <SelectItem value="common">Common</SelectItem>
           </SelectContent>
         </Select>
 
@@ -72,7 +69,6 @@ export function FilteredView({ testScript }: FilteredViewProps) {
       {renderTestScriptSection("Setup", getFilteredTestScript().setup)}
       {renderTestScriptSection("Tests", getFilteredTestScript().test)}
       {renderTestScriptSection("Teardown", getFilteredTestScript().teardown)}
-      {renderTestScriptSection("Common", getFilteredTestScript().common)}
     </div>
   );
 } 

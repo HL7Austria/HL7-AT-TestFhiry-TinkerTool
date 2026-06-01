@@ -39,25 +39,6 @@ export function SettingsDialog() {
         </DialogHeader>
         
         <div className="space-y-6 py-4">
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium">Visibility</h4>
-            
-            <div className="flex items-center justify-between space-x-2">
-              <div className="flex-1">
-                <Label htmlFor="metadata-capabilities" className="text-sm font-normal">
-                  Show Metadata Capabilities
-                </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Display the Metadata section with Capabilities in the form
-                </p>
-              </div>
-              <Switch
-                id="metadata-capabilities"
-                checked={settings.showMetadataCapabilities}
-                onCheckedChange={(checked) => updateSetting('showMetadataCapabilities', checked)}
-              />
-            </div>
-          </div>
         </div>
 
         <DialogFooter className="gap-2">

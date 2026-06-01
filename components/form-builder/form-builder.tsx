@@ -28,9 +28,7 @@ import { FixturesSection } from "./sections/fixtures-section"
 import { ProfilesSection } from "./sections/profiles-section"
 import { VariablesSection } from "./sections/variables-section"
 import { ScopeSection } from "./sections/scope-section"
-import { CommonSection } from "./sections/common-section"
 import { useFhirVersion } from "@/lib/fhir-version-context"
-import { useSettings } from "@/lib/settings-context"
 
 type SectionKey =
   | "basic-info"
@@ -42,7 +40,6 @@ type SectionKey =
   | "setup"
   | "tests"
   | "teardown"
-  | "common"
 
 const SECTION_DETAILS: Record<SectionKey, { title: string; description: string }> = {
   "basic-info": {
@@ -81,10 +78,6 @@ const SECTION_DETAILS: Record<SectionKey, { title: string; description: string }
     title: "Teardown",
     description: "Cleanup operations after test completion.",
   },
-  common: {
-    title: "Common Actions",
-    description: "Reusable actions referenced by keys.",
-  },
 }
 
 interface FormBuilderProps {
@@ -95,7 +88,6 @@ interface FormBuilderProps {
 
 function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilderProps) {
   const { currentVersion } = useFhirVersion()
-  const { settings } = useSettings()
   const [activeSection, setActiveSection] = useState<SectionKey>("basic-info")
   const [activeTestIndex, setActiveTestIndex] = useState(0)
 
@@ -112,10 +104,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       infrastructureSections.push("scope")
     }
 
-    const overviewSections: SectionKey[] = ["basic-info"]
-    if (settings.showMetadataCapabilities) {
-      overviewSections.push("metadata")
-    }
+    const overviewSections: SectionKey[] = ["basic-info", "metadata"]
 
     return [
       {
@@ -131,10 +120,10 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       {
         id: "execution",
         title: "Execution",
-        sections: ["setup", "tests", "teardown", "common"],
+        sections: ["setup", "tests", "teardown"],
       },
     ]
-  }, [isR5, settings.showMetadataCapabilities])
+  }, [isR5])
 
   const metadata = useMemo(() => testScript.metadata ?? { capability: [] }, [testScript.metadata])
   const tests = useMemo(() => testScript.test ?? [], [testScript.test])
@@ -220,8 +209,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
     const hasTests =
       tests.length > 0 && tests.every((test) => (test.action?.length ?? 0) > 0)
     const hasTeardown = Boolean(testScript.teardown?.action?.length)
-    const hasCommon = Boolean(testScript.common?.length)
-
     return {
       "basic-info": hasBasicInfo,
       metadata: hasMetadata,
@@ -232,7 +219,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       setup: hasSetup,
       tests: hasTests,
       teardown: hasTeardown,
-      common: hasCommon,
     }
   }, [metadata, testScript, tests])
 
@@ -270,7 +256,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       case "basic-info":
         return <BasicInfoSection testScript={testScript} updateTestScript={updateTestScript} />
       case "metadata":
-        if (!settings.showMetadataCapabilities) return null
         return (
           <MetadataSection
             metadata={metadata}
@@ -350,13 +335,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
             updateTeardown={(value) => updateSection("teardown", value)}
             availableFixtures={availableFixtures}
             availableProfiles={availableProfiles}
-          />
-        )
-      case "common":
-        return (
-          <CommonSection
-            common={testScript.common}
-            updateCommon={(value) => updateSection("common", value)}
           />
         )
       default:

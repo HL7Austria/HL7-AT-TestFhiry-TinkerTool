@@ -21,7 +21,7 @@ import { useMemo, useState, useEffect, startTransition } from "react"
 import { cn } from "@/lib/utils"
 import { AssertionComponent } from "./assertion-component"
 
-type SectionType = "setup" | "test" | "teardown" | "common"
+type SectionType = "setup" | "test" | "teardown"
 type ScriptAction = TestScriptSetupAction | TestScriptTestAction | TestScriptTeardownAction
 
 const HTTP_METHODS: Array<TestScriptSetupActionOperation["method"]> = [
@@ -238,7 +238,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
       errors.resource = "Resource or method or URL required"
       errors.url = "URL or method or resource required"
     }
-    
+
 
     // Source ID only required for POST/PUT
     if (
@@ -272,7 +272,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
   const actionAssert = 'assert' in action ? action.assert as TestScriptSetupActionAssert | undefined : undefined
   const assertionErrors = useMemo(() => {
     if (!actionAssert) return null
-    
+
     return {
     }
   }, [actionAssert, sectionType])
@@ -491,7 +491,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
                     }
                   }}
                 >
-                  <SelectTrigger 
+                  <SelectTrigger
                     id={`action-${index}-resource`}
                     className={cn(operationErrors.resource && "border-destructive focus-visible:ring-destructive")}
                   >

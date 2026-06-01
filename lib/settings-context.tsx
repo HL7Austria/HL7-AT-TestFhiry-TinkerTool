@@ -3,11 +3,9 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, startTransition } from 'react'
 
 interface AppSettings {
-  showMetadataCapabilities: boolean
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
-  showMetadataCapabilities: false,
 }
 
 interface SettingsContextType {
