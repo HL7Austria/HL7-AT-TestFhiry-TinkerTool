@@ -10,9 +10,10 @@ interface SetupSectionProps {
   setup: TestScriptSetup
   updateSetup: (setup: TestScriptSetup) => void
   availableFixtures?: Array<{ id: string; description?: string }>
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
-export default function SetupSection({ setup, updateSetup, availableFixtures = [] }: SetupSectionProps) {
+export default function SetupSection({ setup, updateSetup, availableFixtures = [], availableProfiles = [] }: SetupSectionProps) {
   const actions = setup.action ?? []
 
   const addSetupAction = () => {
@@ -30,7 +31,6 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
   const addSetupAssertionAction = () => {
     const newAction: TestScriptSetupAction = {
       assert: {
-        description: "",
         response: "okay",
         warningOnly: false,
         stopTestOnFail: true,
@@ -88,6 +88,7 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
               updateAction={(updated) => updateAction(idx, updated)}
               removeAction={() => removeAction(idx)}
               availableFixtures={availableFixtures}
+              availableProfiles={availableProfiles}
             />
           ))}
         </div>

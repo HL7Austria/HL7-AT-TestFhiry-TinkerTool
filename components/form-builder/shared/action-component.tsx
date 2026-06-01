@@ -182,6 +182,7 @@ interface ActionComponentProps<TAction extends ScriptAction> {
   updateAction: (action: TAction) => void
   removeAction?: () => void
   availableFixtures?: Array<{ id: string; description?: string }>
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
 const ensureCoding = (coding: Coding | undefined, defaultSystem: string): Coding => ({
@@ -197,6 +198,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
   updateAction,
   removeAction,
   availableFixtures = [],
+  availableProfiles = [],
 }: ActionComponentProps<TAction>) {
   const [showCustomResourceType, setShowCustomResourceType] = useState(false)
   
@@ -230,34 +232,21 @@ export default function ActionComponent<TAction extends ScriptAction>({
       requestHeaders?: Record<number, string[]>
     } = {}
 
-    // Type Code is always required
-    if (!operation.type?.code?.trim()) {
-      errors.typeCode = "Operation type required"
+    // At least one of method, resource or URL is required
+    if (!(operation.method ||operation.resource?.trim() || operation.url?.trim())) {
+      errors.method = "HTTP method or resource type or URL required"
+      errors.resource = "Resource or method or URL required"
+      errors.url = "URL or method or resource required"
     }
+    
 
-    // Method, Resource and URL are only required in setup, optional in tests
-    if (sectionType === "setup") {
-      if (!operation.method) {
-        errors.method = "HTTP method required"
-      }
-
-      if (!operation.resource?.trim()) {
-        errors.resource = "Resource type required"
-      }
-
-      if (!operation.url?.trim()) {
-        errors.url = "URL required"
-      }
-    }
-
-    // Source ID only required in setup for POST/PUT
+    // Source ID only required for POST/PUT
     if (
-      sectionType === "setup" &&
       operation.method &&
       ["post", "put"].includes(operation.method) &&
       !operation.sourceId?.trim()
     ) {
-      errors.sourceId = "Source ID required for POST/PUT in setup"
+      errors.sourceId = "Source ID required for POST/PUT"
     }
 
     const headerErrors: Record<number, string[]> = {}
@@ -284,11 +273,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
   const assertionErrors = useMemo(() => {
     if (!actionAssert) return null
     
-    // Description is only required in setup, optional in tests
-    const { description, response } = actionAssert
     return {
-      description: sectionType === "setup" && !description?.trim() ? "Description required" : undefined,
-      response: sectionType === "setup" && !response ? "Select expected response" : undefined,
     }
   }, [actionAssert, sectionType])
 
@@ -392,6 +377,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
           onAddRequirement={addRequirement}
           onRemoveRequirement={removeRequirement}
           errors={assertionErrors ?? undefined}
+          availableProfiles={availableProfiles}
         />
       ) : (
         <>

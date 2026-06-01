@@ -147,6 +147,15 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
       })),
     [testScript.fixture]
   )
+  const availableProfiles = useMemo(() => 
+    (testScript.profile ?? [])
+      .filter(p => p.id)
+      .map(p => ({
+        id: p.id,
+        reference: p.reference
+      })),
+    [testScript.profile]
+  )
 
   useEffect(() => {
     startTransition(() => {
@@ -318,6 +327,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
             setup={testScript.setup ?? { action: [] }}
             updateSetup={(value) => updateSection("setup", value)}
             availableFixtures={availableFixtures}
+            availableProfiles={availableProfiles}
           />
         )
       case "tests":
@@ -330,6 +340,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
             onRemoveTest={removeTestCase}
             onUpdateTest={updateTestCase}
             availableFixtures={availableFixtures}
+            availableProfiles={availableProfiles}
           />
         )
       case "teardown":
@@ -338,6 +349,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
             teardown={testScript.teardown ?? { action: [] }}
             updateTeardown={(value) => updateSection("teardown", value)}
             availableFixtures={availableFixtures}
+            availableProfiles={availableProfiles}
           />
         )
       case "common":
@@ -359,7 +371,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
         sectionCompleteness={progressCompleteness}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
         <Card className="relative flex flex-col overflow-hidden p-4">
           <div className="relative z-10 space-y-4">
             <div>
@@ -451,6 +463,7 @@ interface TestsPanelProps {
   onRemoveTest: (index: number) => void
   onUpdateTest: (index: number, test: TestScriptTest) => void
   availableFixtures?: Array<{ id: string; description?: string }>
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
 const TestsPanel = memo(function TestsPanel({
@@ -461,6 +474,7 @@ const TestsPanel = memo(function TestsPanel({
   onRemoveTest,
   onUpdateTest,
   availableFixtures = [],
+  availableProfiles = [],
 }: TestsPanelProps) {
   const activeTest = tests[activeIndex]
 
@@ -484,7 +498,7 @@ const TestsPanel = memo(function TestsPanel({
           No test cases defined yet. Create your first test case to add actions.
         </Card>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
+        <div className="grid gap-4 lg:grid-cols-[200px_1fr]">
           <Card className="p-3">
             <ScrollArea className="h-[360px] pr-2">
               <div className="space-y-2">
@@ -519,7 +533,7 @@ const TestsPanel = memo(function TestsPanel({
             </ScrollArea>
           </Card>
 
-          <Card className="p-4">
+          <Card className="min-w-0 overflow-hidden p-4">
             {activeTest ? (
               <TestCaseSection
                 test={activeTest}
@@ -527,6 +541,7 @@ const TestsPanel = memo(function TestsPanel({
                 updateTest={(value) => onUpdateTest(activeIndex, value)}
                 removeTest={() => onRemoveTest(activeIndex)}
                 availableFixtures={availableFixtures}
+                availableProfiles={availableProfiles}
               />
             ) : (
               <p className="text-sm text-muted-foreground">
