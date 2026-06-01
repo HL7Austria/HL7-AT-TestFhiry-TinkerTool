@@ -10,15 +10,30 @@ interface SetupSectionProps {
   setup: TestScriptSetup
   updateSetup: (setup: TestScriptSetup) => void
   availableFixtures?: Array<{ id: string; description?: string }>
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
-export default function SetupSection({ setup, updateSetup, availableFixtures = [] }: SetupSectionProps) {
+export default function SetupSection({ setup, updateSetup, availableFixtures = [], availableProfiles = [] }: SetupSectionProps) {
   const actions = setup.action ?? []
 
   const addSetupAction = () => {
     const newAction: TestScriptSetupAction = {
       operation: {
         encodeRequestUrl: true,
+      },
+    }
+    updateSetup({
+      ...setup,
+      action: [...actions, newAction],
+    })
+  }
+
+  const addSetupAssertionAction = () => {
+    const newAction: TestScriptSetupAction = {
+      assert: {
+        response: "okay",
+        warningOnly: false,
+        stopTestOnFail: true,
       },
     }
     updateSetup({
@@ -46,10 +61,14 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
 
   return (
     <div className="space-y-4 p-2">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-2">
         <Button variant="outline" size="sm" onClick={addSetupAction} className="flex items-center gap-1">
           <Plus className="h-4 w-4" />
-          Add Setup Action
+          Add Operation
+        </Button>
+        <Button variant="outline" size="sm" onClick={addSetupAssertionAction} className="flex items-center gap-1">
+          <Plus className="h-4 w-4" />
+          Add Assertion
         </Button>
       </div>
 
@@ -69,6 +88,7 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
               updateAction={(updated) => updateAction(idx, updated)}
               removeAction={() => removeAction(idx)}
               availableFixtures={availableFixtures}
+              availableProfiles={availableProfiles}
             />
           ))}
         </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import type { TestScript, TestScriptFixture } from "@/types/fhir-enhanced"
-import type { IGConfiguration, ExampleInstance, GeneratedFixture } from "@/types/ig-types"
+import type { IGConfiguration } from "@/types/ig-types"
 import { IGService } from "./services/ig-service"
 import { FixtureGeneratorService } from "./services/fixture-generator"
 
@@ -367,7 +367,7 @@ export class FixtureFeatureTester {
       }
 
       // Simulate adding to TestScript
-      const mockTestScript: Partial<TestScript> = {
+      const _mockTestScript: Partial<TestScript> = {
         fixture: fixtures
       }
 
@@ -449,7 +449,7 @@ interface TestResult {
   success: boolean
   message: string
   error?: string
-  details?: any
+  details?: Record<string, unknown>
 }
 
 interface TestResults {

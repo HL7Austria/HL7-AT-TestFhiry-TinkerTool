@@ -8,23 +8,13 @@ import type { TestScript } from "@/types/fhir-enhanced"
  */
 export const initialTestScript: TestScript = {
   resourceType: "TestScript",
-  name: "MinimalTestScript",
-  status: "draft",
   url: "http://example.org/fhir/TestScript/MinimalTestScript",
+  name: "MinimalTestScript",
   title: "Minimales TestScript",
-  description: "Ein minimales, aber valides FHIR TestScript für Validierungszwecke.",
+  status: "draft",
   date: "2024-01-15T10:00:00.000Z",
   publisher: "Tinker Tool - FHIR TestScript Builder",
-  fixture: [
-    {
-      id: "patient-fixture",
-      autocreate: false,
-      autodelete: false,
-      resource: {
-        reference: "Patient/example"
-      }
-    }
-  ],
+  description: "Ein minimales, aber valides FHIR TestScript für Validierungszwecke.",
   destination: [
     {
       index: 1,
@@ -37,13 +27,23 @@ export const initialTestScript: TestScript = {
   metadata: {
     capability: [
       {
-        capabilities: "http://hl7.org/fhir/CapabilityStatement/base",
         required: true,
         validated: false,
-        description: "Basis FHIR Server Capabilities"
+        description: "Basis FHIR Server Capabilities",
+        capabilities: "http://hl7.org/fhir/CapabilityStatement/base"
       }
     ]
   },
+  fixture: [
+    {
+      id: "patient-fixture",
+      autocreate: false,
+      autodelete: false,
+      resource: {
+        reference: "Patient/example"
+      }
+    }
+  ],
   test: [
     {
       id: "minimal-test-1",
@@ -51,27 +51,26 @@ export const initialTestScript: TestScript = {
       description: "Validiert, dass der Server die Beispiel-Patientenressource bereitstellt.",
       action: [
         {
-          id: "action-read-patient",
           operation: {
-            label: "Patient laden",
-            description: "Führt eine READ-Operation für den Beispiel-Patienten aus.",
             type: {
               system: "http://hl7.org/fhir/restful-interaction",
               code: "read"
             },
-            method: "get",
             resource: "Patient",
-            sourceId: "patient-fixture",
-            targetId: "1",
-            url: "/Patient/example",
-            params: "_format=json",
+            label: "Patient laden",
+            description: "Führt eine READ-Operation für den Beispiel-Patienten aus.",
             encodeRequestUrl: true,
+            method: "get",
+            params: "_format=json",
             requestHeader: [
               {
                 field: "Accept",
                 value: "application/fhir+json"
               }
-            ]
+            ],
+            sourceId: "patient-fixture",
+            targetId: "1",
+            url: "/Patient/example"
           }
         }
       ]

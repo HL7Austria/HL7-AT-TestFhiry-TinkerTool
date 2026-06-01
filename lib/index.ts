@@ -12,3 +12,6 @@ export { initialTestScript } from './initial-data'
 // Formatters
 export { formatToJson } from './formatters/json-formatter'
 export { formatToXml } from './formatters/xml-formatter'
+
+// Key Ordering
+export { orderTestScriptKeys } from './testscript-key-order'

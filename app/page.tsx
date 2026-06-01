@@ -51,7 +51,7 @@ export default function Home() {
       </header>
 
       {/* Main Dashboard */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 lg:px-2 py-6">
         <TestScriptBuilder />
       </main>
 

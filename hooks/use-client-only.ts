@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, startTransition } from "react"
 
 /**
  * Hook um sicherzustellen, dass Code nur auf dem Client ausgeführt wird
@@ -10,7 +10,7 @@ export function useClientOnly() {
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    setIsClient(true)
+    startTransition(() => setIsClient(true))
   }, [])
 
   return isClient

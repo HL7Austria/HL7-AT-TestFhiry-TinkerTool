@@ -209,7 +209,7 @@ export class CacheService {
       request.onsuccess = () => {
         const result = request.result
         if (result) {
-          const { key: _, ...entry } = result
+          const { key: _key, ...entry } = result
           resolve(entry as IGCacheEntry<T>)
         } else {
           resolve(null)

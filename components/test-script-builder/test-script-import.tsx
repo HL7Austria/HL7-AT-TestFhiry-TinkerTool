@@ -51,7 +51,7 @@ export function TestScriptImport({ onImport }: TestScriptImportProps) {
         const hasWarnings = result.validationResult?.issue && result.validationResult.issue.length > 0
         if (hasWarnings) {
           toast.success("TestScript imported successfully", {
-            description: `${result.validationResult.issue.length} hint(s) present`,
+            description: `${result.validationResult?.issue?.length ?? 0} hint(s) present`,
           })
         } else {
           toast.success("TestScript imported successfully")

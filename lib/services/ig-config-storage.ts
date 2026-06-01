@@ -120,7 +120,7 @@ export class IGConfigStorageService {
         timestamp: storageData.timestamp,
         size: stored.length
       }
-    } catch (error) {
+    } catch (_error) {
       return { hasStoredConfig: false }
     }
   }

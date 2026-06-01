@@ -87,19 +87,31 @@ function enhanceFhirResponse(fhirResponse: OperationOutcome, originalJson: strin
   }
 
   // Formatiere das ursprüngliche JSON für bessere Positionsberechnung
-  const formattedJson = JSON.stringify(JSON.parse(originalJson), null, 2);
+  let formattedJson: string;
+  try {
+    formattedJson = JSON.stringify(JSON.parse(originalJson), null, 2);
+  } catch {
+    // If the original JSON is invalid, use it as-is for position calculation
+    formattedJson = originalJson;
+  }
 
   const enhancedIssues = fhirResponse.issue.map(issue => {
     const { line, column } = extractLineAndColumn(issue, formattedJson);
     
     // Verbessere die Fehlermeldung
-    let message = issue.diagnostics || issue.details?.text || "Unbekannter Validierungsfehler";
+    const message = issue.diagnostics || issue.details?.text || "Unbekannter Validierungsfehler";
     
     // Note: Keeping error messages from FHIR server in original language
     // for consistency with FHIR specification
 
+    const filteredExtensions = (issue.extension ?? []).filter(
+      (ext: Extension) =>
+        ext.url !== "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line" &&
+        ext.url !== "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col"
+    );
+
     const updatedExtensions: Extension[] = [
-      ...(issue.extension ?? []),
+      ...filteredExtensions,
       {
         url: "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
         valueInteger: line,
@@ -451,16 +463,49 @@ function validateExtendedStructure(testScript: TestScript) {
 
           // Validate Assertion if present
           if (action.assert) {
-            if (!action.assert.description) {
+            // Check if there is a preceding operation in this test's action list or a sourceId on the assert
+            const hasPrecedingOperation = test.action!
+              .slice(0, actionIndex)
+              .some((prev) => Boolean(prev.operation))
+            if (!hasPrecedingOperation && !action.assert.sourceId) {
               errors.push({
-                message: `Test ${testIndex + 1}, Action ${actionIndex + 1}: Assertion requires a description`,
-                location: ['test', testIndex.toString(), 'action', actionIndex.toString(), 'assert', 'description'],
-                line: 36 + testIndex * 10 + actionIndex * 2,
-                column: 13
+                message: `Test ${testIndex + 1}, Action ${actionIndex + 1}: Missing Operation to test`,
+                location: ['test', testIndex.toString(), 'action', actionIndex.toString(), 'assert'],
+                line: 30 + testIndex * 10 + actionIndex * 2,
+                column: 9
               });
             }
           }
         });
+      }
+    });
+  }
+
+  // Extended validation for setup actions
+  if (testScript.setup && Array.isArray(testScript.setup.action)) {
+    testScript.setup.action.forEach((action, actionIndex) => {
+      // Check FHIR constraint: Action may only have Operation OR Assert, not both
+      if (action.operation && action.assert) {
+        errors.push({
+          message: `Setup Action ${actionIndex + 1}: An action may only contain an operation or an assertion, not both (FHIR constraint tst-2)`,
+          location: ['setup', 'action', actionIndex.toString()],
+          line: 15 + actionIndex * 2,
+          column: 9
+        });
+      }
+
+      if (action.assert) {
+        const hasPrecedingOperation = testScript.setup!.action!
+          .slice(0, actionIndex)
+          .some((prev) => Boolean(prev.operation))
+        if (!hasPrecedingOperation && !action.assert.sourceId) {
+          errors.push({
+            message: `Setup Action ${actionIndex + 1}: Missing Operation to test`,
+            location: ['setup', 'action', actionIndex.toString(), 'assert'],
+            line: 15 + actionIndex * 2,
+            column: 9
+          });
+        }
       }
     });
   }

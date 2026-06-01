@@ -37,6 +37,7 @@ interface AssertionComponentProps {
     description?: string
     response?: string
   }
+  availableProfiles?: Array<{ id: string; reference: string }>
 }
 
 export function AssertionComponent({
@@ -50,6 +51,7 @@ export function AssertionComponent({
   onAddRequirement,
   onRemoveRequirement,
   errors,
+  availableProfiles = [],
 }: AssertionComponentProps) {
   const updateField = <TKey extends keyof TestScriptSetupActionAssert>(
     field: TKey,
@@ -78,6 +80,12 @@ export function AssertionComponent({
   const removeRequirement = (index: number) => {
     updateField("requirement", onRemoveRequirement(assertion.requirement, index))
   }
+
+  const hasCompareSourceId = Boolean(assertion.compareToSourceId)
+  const hasComparePath = Boolean(assertion.compareToSourcePath)
+  const hasCompareExpression = Boolean(assertion.compareToSourceExpression)
+  const compareSourceMissingId = !hasCompareSourceId && (hasComparePath || hasCompareExpression)
+  const compareSourceBothSet = hasComparePath && hasCompareExpression
 
   return (
     <Card className="space-y-4 bg-muted/30 p-4">
@@ -116,13 +124,14 @@ export function AssertionComponent({
         <div>
           <Label htmlFor="assertion-direction">Direction</Label>
           <Select
-            value={assertion.direction ?? ""}
-            onValueChange={(value) => updateField("direction", value as typeof assertion.direction)}
+            value={assertion.direction ?? "__none__"}
+            onValueChange={(value) => updateField("direction", value === "__none__" ? undefined : value as typeof assertion.direction)}
           >
             <SelectTrigger id="assertion-direction">
               <SelectValue placeholder="Select direction" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none__">-- None --</SelectItem>
               {directionOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -134,14 +143,15 @@ export function AssertionComponent({
         <div>
           <Label htmlFor="assertion-response">Expected Response</Label>
           <Select
-            value={assertion.response ?? ""}
-            onValueChange={(value) => updateField("response", value as TestScriptSetupActionAssertResponse)}
+            value={assertion.response ?? "__none__"}
+            onValueChange={(value) => updateField("response", value === "__none__" ? undefined : value as TestScriptSetupActionAssertResponse)}
             aria-invalid={Boolean(errors?.response)}
           >
             <SelectTrigger id="assertion-response">
               <SelectValue placeholder="Select response" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none__">-- None --</SelectItem>
               {responseOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -189,13 +199,14 @@ export function AssertionComponent({
         <div>
           <Label htmlFor="assertion-operator">Operator</Label>
           <Select
-            value={assertion.operator ?? ""}
-            onValueChange={(value) => updateField("operator", value as typeof assertion.operator)}
+            value={assertion.operator ?? "__none__"}
+            onValueChange={(value) => updateField("operator", value === "__none__" ? undefined : value as typeof assertion.operator)}
           >
             <SelectTrigger id="assertion-operator">
               <SelectValue placeholder="Select operator" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__none__">-- None --</SelectItem>
               {operatorOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -250,7 +261,7 @@ export function AssertionComponent({
             id="assertion-path"
             value={assertion.path ?? ""}
             onChange={(event) => updateField("path", event.target.value || undefined)}
-            placeholder="FHIRPath"
+            placeholder="XPath / JsonPath"
           />
         </div>
         <div>
@@ -272,6 +283,7 @@ export function AssertionComponent({
             onChange={(event) =>
               updateField("compareToSourceId", event.target.value || undefined)
             }
+            className={cn(compareSourceMissingId && "border-destructive focus-visible:ring-destructive")}
           />
         </div>
         <div>
@@ -282,7 +294,9 @@ export function AssertionComponent({
             onChange={(event) =>
               updateField("compareToSourcePath", event.target.value || undefined)
             }
+            className={cn((compareSourceMissingId && hasComparePath || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
           />
+          <p className="text-xs text-muted-foreground">XPath / JsonPath</p>
         </div>
         <div>
           <Label htmlFor="assertion-compare-expression">Compare Expression</Label>
@@ -292,9 +306,17 @@ export function AssertionComponent({
             onChange={(event) =>
               updateField("compareToSourceExpression", event.target.value || undefined)
             }
+            className={cn((compareSourceMissingId && hasCompareExpression || compareSourceBothSet) && "border-destructive focus-visible:ring-destructive")}
           />
+          <p className="text-xs text-muted-foreground">FHIRPath</p>
         </div>
       </div>
+      {compareSourceMissingId && (
+        <p className="text-xs text-destructive">compareToSourceId ist erforderlich wenn Expression oder Path gesetzt sind.</p>
+      )}
+      {compareSourceBothSet && (
+        <p className="text-xs text-destructive">Nur compareToSourceExpression oder compareToSourcePath darf gesetzt sein, nicht beides gleichzeitig.</p>
+      )}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
@@ -318,13 +340,33 @@ export function AssertionComponent({
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <div>
           <Label htmlFor="assertion-validate-profile">Validate Profile ID</Label>
-          <Input
-            id="assertion-validate-profile"
-            value={assertion.validateProfileId ?? ""}
-            onChange={(event) =>
-              updateField("validateProfileId", event.target.value || undefined)
-            }
-          />
+          {availableProfiles.length > 0 ? (
+            <Select
+              value={assertion.validateProfileId ?? "__none__"}
+              onValueChange={(value) => updateField("validateProfileId", value === "__none__" ? undefined : value)}
+            >
+              <SelectTrigger id="assertion-validate-profile">
+                <SelectValue placeholder="Select profile..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">-- None --</SelectItem>
+                {availableProfiles.map((profile) => (
+                  <SelectItem key={profile.id} value={profile.id}>
+                    {profile.id} ({profile.reference})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              id="assertion-validate-profile"
+              value={assertion.validateProfileId ?? ""}
+              onChange={(event) =>
+                updateField("validateProfileId", event.target.value || undefined)
+              }
+              placeholder="No profiles defined yet"
+            />
+          )}
         </div>
         <div>
           <Label htmlFor="assertion-minimum-id">Minimum ID</Label>

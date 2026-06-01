@@ -1,6 +1,6 @@
 "use client"
 
-import { TestScript } from "@/types/fhir-enhanced"
+import { TestScript, ValidationResult } from "@/types/fhir-enhanced"
 import SyntaxHighlighter from "./syntax-highlighter"
 import { Button } from "./ui/button"
 import { ClipboardCopy, Download, AlertCircle, CheckCircle } from "lucide-react"
@@ -13,7 +13,7 @@ import { clientOnly } from "@/hooks/use-client-only"
 
 // Type für Validierungsstate - optional
 interface ValidationState {
-  validationResult: any
+  validationResult: ValidationResult | null
   isValidating: boolean
   validate: (testScript: TestScript) => void
   serverError: string | null

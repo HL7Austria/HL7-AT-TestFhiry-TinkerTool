@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo } from "react"
 import FormBuilder from "@/components/form-builder/form-builder"
 import { HeaderSection } from "./test-script-builder/header-section"
 import { OutputSection } from "./test-script-builder/output-section"
 import type { TestScript, TestScriptStatus } from "@/types/fhir-enhanced"
 import { initialTestScript } from "@/lib/initial-data"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { orderTestScriptKeys } from "@/lib/testscript-key-order"
 
 /**
  * Main TestScript Builder component that manages the overall state and layout
@@ -21,7 +22,7 @@ export function TestScriptBuilder() {
    * @param newData - Partial TestScript data to merge with the current state
    */
   const updateTestScript = useCallback((newData: Partial<TestScript>) => {
-    setTestScript((prev) => ({ ...prev, ...newData }))
+    setTestScript((prev) => orderTestScriptKeys({ ...prev, ...newData }))
   }, [])
 
   /**
@@ -33,7 +34,7 @@ export function TestScriptBuilder() {
     section: K, 
     data: TestScript[K]
   ) => {
-    setTestScript((prev) => ({
+    setTestScript((prev) => orderTestScriptKeys({
       ...prev,
       [section]: data,
     }))
@@ -82,7 +83,7 @@ export function TestScriptBuilder() {
         testScript={testScript}
         isValidTestScript={isValidTestScript}
         getStatusBadgeVariant={getStatusBadgeVariant}
-        onImport={(importedScript) => setTestScript(importedScript)}
+        onImport={(importedScript) => setTestScript(orderTestScriptKeys(importedScript))}
         onClear={handleClear}
       />
 
