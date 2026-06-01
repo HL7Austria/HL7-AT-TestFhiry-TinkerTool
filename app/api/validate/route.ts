@@ -87,7 +87,13 @@ function enhanceFhirResponse(fhirResponse: OperationOutcome, originalJson: strin
   }
 
   // Formatiere das ursprüngliche JSON für bessere Positionsberechnung
-  const formattedJson = JSON.stringify(JSON.parse(originalJson), null, 2);
+  let formattedJson: string;
+  try {
+    formattedJson = JSON.stringify(JSON.parse(originalJson), null, 2);
+  } catch {
+    // If the original JSON is invalid, use it as-is for position calculation
+    formattedJson = originalJson;
+  }
 
   const enhancedIssues = fhirResponse.issue.map(issue => {
     const { line, column } = extractLineAndColumn(issue, formattedJson);
@@ -98,8 +104,14 @@ function enhanceFhirResponse(fhirResponse: OperationOutcome, originalJson: strin
     // Note: Keeping error messages from FHIR server in original language
     // for consistency with FHIR specification
 
+    const filteredExtensions = (issue.extension ?? []).filter(
+      (ext: Extension) =>
+        ext.url !== "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line" &&
+        ext.url !== "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-col"
+    );
+
     const updatedExtensions: Extension[] = [
-      ...(issue.extension ?? []),
+      ...filteredExtensions,
       {
         url: "http://hl7.org/fhir/StructureDefinition/operationoutcome-issue-line",
         valueInteger: line,
