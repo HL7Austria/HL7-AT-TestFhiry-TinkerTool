@@ -303,7 +303,7 @@ export function ValidationTab({
               <AccordionTrigger className="text-red-700 hover:text-red-800 dark:text-red-300 dark:hover:text-red-200">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-5 w-5" />
-                  <span className="font-semibold">Fatale Fehler ({fatalIssues.length})</span>
+                  <span className="font-semibold">Fatal Errors ({fatalIssues.length})</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -331,7 +331,7 @@ export function ValidationTab({
               <AccordionTrigger className="text-red-600 hover:text-red-700 dark:text-red-300 dark:hover:text-red-200">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-5 w-5" />
-                  <span className="font-semibold">Fehler ({errorIssues.length})</span>
+                  <span className="font-semibold">Errors ({errorIssues.length})</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>

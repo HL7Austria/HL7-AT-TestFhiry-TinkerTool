@@ -16,7 +16,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { CheckCircle2, Circle, Plus } from "lucide-react"
 import type { TestScript, TestScriptTest } from "@/types/fhir-enhanced"
-import { ProgressIndicator } from "./progress-indicator"
 import BasicInfoSection from "./sections/basic-info-section"
 import MetadataSection from "./sections/metadata-section"
 import SetupSection from "./sections/setup-section"
@@ -222,28 +221,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
     }
   }, [metadata, testScript, tests])
 
-  const progressCompleteness = useMemo(
-    () => ({
-      basicInfo: sectionCompleteness["basic-info"],
-      metadata: sectionCompleteness.metadata,
-      setup: sectionCompleteness.setup,
-      tests: sectionCompleteness.tests,
-      teardown: sectionCompleteness.teardown,
-    }),
-    [sectionCompleteness],
-  )
-
-  const overallProgress = useMemo(() => {
-    const relevantKeys: Array<keyof typeof progressCompleteness> = [
-      "basicInfo",
-      "metadata",
-      "setup",
-      "tests",
-      "teardown",
-    ]
-    const completed = relevantKeys.filter((key) => progressCompleteness[key]).length
-    return Math.round((completed / relevantKeys.length) * 100)
-  }, [progressCompleteness])
 
   const activeMeta = SECTION_DETAILS[activeSection]
   const testsActionTotal = useMemo(
@@ -344,11 +321,6 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
 
   return (
     <div className="space-y-6">
-      <ProgressIndicator
-        overallProgress={overallProgress}
-        sectionCompleteness={progressCompleteness}
-      />
-
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
         <Card className="relative flex flex-col overflow-hidden p-4">
           <div className="relative z-10 space-y-4">

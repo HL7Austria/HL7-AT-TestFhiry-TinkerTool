@@ -1,6 +1,7 @@
 import { create } from "xmlbuilder2"
 import type { XMLBuilder } from "xmlbuilder2/lib/interfaces"
 import type { TestScript } from "@/types/fhir-enhanced"
+import { cleanEmptySections } from "@/lib/utils"
 
 type SerializablePrimitive = string | number | boolean | null
 type SerializableValue = SerializablePrimitive | SerializableValue[] | { [key: string]: SerializableValue }
@@ -30,10 +31,13 @@ const appendNode = (builder: XMLBuilder, key: string, value: SerializableValue):
  */
 export function formatToXml(testScript: TestScript): string {
   try {
+    // Bereinige leere Sektionen vor der Serialisierung
+    const cleanedTestScript = cleanEmptySections(testScript)
+
     const document = create({ version: "1.0", encoding: "UTF-8" })
     const root = document.ele("TestScript", { xmlns: "http://hl7.org/fhir" })
 
-    const serializable = JSON.parse(JSON.stringify(testScript)) as Record<string, SerializableValue>
+    const serializable = JSON.parse(JSON.stringify(cleanedTestScript)) as Record<string, SerializableValue>
     Object.entries(serializable).forEach(([key, value]) => {
       if (key === "resourceType") {
         return

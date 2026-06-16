@@ -58,14 +58,21 @@ TinkerTool vereinfacht die Erstellung von FHIR® TestScripts durch eine intuitiv
 │  ├─ ui/                       # shadcn/ui Komponenten
 │  └─ *.tsx                     # Weitere Komponenten
 ├─ hooks/                        # Custom React Hooks
-│  └─ use-FHIR®-validation.ts    # FHIR®-Validierung Hook
+│  ├─ use-fhir-validation.ts      # FHIR®-Validierung Hook
+│  ├─ use-client-only.ts         # Client-side utilities
+│  ├─ use-progress-animation.ts  # Progress animation hook
+│  └─ index.ts                   # Hook exports
 ├─ lib/                         # Utilities und Services
 │  ├─ formatters/              # JSON/XML Formatierung
 │  ├─ services/                # FHIR®-Validierungs-Service
 │  └─ utils.ts                  # Hilfsfunktionen
 ├─ types/                       # TypeScript-Typen
-│  ├─ test-script.ts           # TestScript-spezifische Typen
-│  └─ validation.ts             # Validierungs-Typen
+│  ├─ fhir-config.ts            # FHIR®-Konfigurationstypen
+│  ├─ fhir-enhanced.ts          # Erweiterte FHIR®-Typen
+│  ├─ fhir-versions/            # Versionsspezifische Typen
+│  │  ├─ r4-types.ts
+│  │  └─ r5-types.ts
+│  └─ ig-types.ts               # Implementation Guide Typen
 ├─ public/                      # Statische Assets
 └─ README.md
 ```
@@ -212,27 +219,36 @@ classDiagram
 ### lib/
 **Zweck:** Geschäftslogik, Services und Utilities  
 **Hauptdateien:**
-- `services/FHIR®-validation-service.ts` → FHIR®-Server-Validierung
+- `services/cache-service.ts` → Caching-Service
+- `services/fixture-generator.ts` → Fixture-Generierung
+- `services/ig-config-storage.ts` → Implementation Guide Konfiguration
+- `services/ig-service.ts` → Implementation Guide Service
 - `formatters/xml-formatter.ts` → XML-Generierung
 - `formatters/json-formatter.ts` → JSON-Formatierung
 - `initial-data.ts` → Standard-TestScript-Template
-- `utils.ts` → CSS-Klassen-Hilfsfunktionen
+- `utils.ts` → Hilfsfunktionen
+- `fhir-version-context.tsx` → FHIR®-Version Context
 
 ### types/
 **Zweck:** TypeScript-Typdefinitionen  
 **Hauptdateien:**
-- `test-script.ts` → Vollständige FHIR® TestScript-Typen
-- `validation.ts` → Validierungs-Ergebnis-Typen
+- `fhir-config.ts` → FHIR®-Konfigurationstypen
+- `fhir-enhanced.ts` → Erweiterte FHIR®-Typen
+- `fhir-versions/r4-types.ts` → R4-spezifische Typen
+- `fhir-versions/r5-types.ts` → R5-spezifische Typen
+- `ig-types.ts` → Implementation Guide Typen
 
 ### hooks/
 **Zweck:** Custom React Hooks für State-Management  
 **Hauptdateien:**
-- `use-FHIR®-validation.ts` → FHIR®-Validierung mit State-Management
+- `use-fhir-validation.ts` → FHIR®-Validierung mit State-Management
+- `use-client-only.ts` → Client-seitige Utilities
+- `use-progress-animation.ts` → Progress-Animation Hook
 
 ## Setup & Installation
 ### wichtige Abhängigkeiten:
-- Next.js 15.2.4 (Framework)
-- React 19.0.0 (UI-Library)
+- Next.js 16.1.1 (Framework)
+- React 19.2.3 (UI-Library)
 - TypeScript 5 (Type-Safety)
 - Tailwind CSS 4 (Styling)
 - Radix UI (Komponenten)
