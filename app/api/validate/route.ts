@@ -144,6 +144,9 @@ export async function POST(request: Request) {
     const fhirVersion = parseFhirVersion(versionHeader || undefined);
     const fhirConfig = getFhirVersionConfig(fhirVersion);
     
+    // Prüfe, ob eine benutzerdefinierte Server-URL übermittelt wurde
+    const customServerUrl = request.headers.get('X-Server-URL');
+    
     // Prüfe, ob es sich um einen Import handelt (lockere Validierung)
     const isImportMode = request.headers.get('X-Validation-Mode') === 'import';
     
@@ -200,7 +203,10 @@ export async function POST(request: Request) {
     if (extendedValidation.valid) {
       try {
         const formattedTestScript = JSON.stringify(body, null, 2);
-        const fhirServerUrl = fhirConfig.validationEndpoint;
+        // Use custom server URL if provided, otherwise use default from config
+        const fhirServerUrl = customServerUrl 
+          ? `${customServerUrl}/TestScript/$validate`
+          : fhirConfig.validationEndpoint;
         
         console.log(`Using ${fhirVersion} FHIR Server for validation: ${fhirServerUrl}`);
         
