@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -40,7 +41,7 @@ interface AssertionComponentProps {
   availableProfiles?: Array<{ id: string; reference: string }>
 }
 
-export function AssertionComponent({
+export const AssertionComponent = memo(function AssertionComponent({
   assertion,
   updateAssertion,
   removeAssertion,
@@ -496,6 +497,13 @@ export function AssertionComponent({
       </div>
     </Card>
   )
-}
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.assertion === nextProps.assertion &&
+    prevProps.errors?.description === nextProps.errors?.description &&
+    prevProps.errors?.response === nextProps.errors?.response &&
+    prevProps.availableProfiles === nextProps.availableProfiles
+  )
+})
 
 export default AssertionComponent

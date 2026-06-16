@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Plus } from "lucide-react"
@@ -28,22 +29,31 @@ export default function TeardownSection({ teardown, updateTeardown, availableFix
     })
   }
 
-  const updateAction = (index: number, action: TestScriptTeardownAction) => {
-    const next = [...actions]
-    next[index] = action
-    updateTeardown({
-      ...teardown,
-      action: next,
-    })
-  }
+  const actionsRef = useRef(actions)
+  actionsRef.current = actions
 
-  const removeAction = (index: number) => {
-    const next = actions.filter((_, idx) => idx !== index)
-    updateTeardown({
-      ...teardown,
+  const teardownRef = useRef(teardown)
+  teardownRef.current = teardown
+
+  const updateTeardownRef = useRef(updateTeardown)
+  updateTeardownRef.current = updateTeardown
+
+  const updateActionStable = useCallback((index: number, action: TestScriptTeardownAction) => {
+    const next = [...actionsRef.current]
+    next[index] = action
+    updateTeardownRef.current({
+      ...teardownRef.current,
       action: next,
     })
-  }
+  }, [])
+
+  const removeActionStable = useCallback((index: number) => {
+    const next = actionsRef.current.filter((_, idx) => idx !== index)
+    updateTeardownRef.current({
+      ...teardownRef.current,
+      action: next,
+    })
+  }, [])
 
   return (
     <div className="space-y-4 p-2">
@@ -67,8 +77,8 @@ export default function TeardownSection({ teardown, updateTeardown, availableFix
               action={action}
               index={idx}
               sectionType="teardown"
-              updateAction={(updated) => updateAction(idx, updated)}
-              removeAction={() => removeAction(idx)}
+              updateAction={updateActionStable}
+              removeAction={removeActionStable}
               availableFixtures={availableFixtures}
               availableProfiles={availableProfiles}
             />

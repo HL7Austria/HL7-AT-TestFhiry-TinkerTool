@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Plus } from "lucide-react"
@@ -42,22 +43,31 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
     })
   }
 
-  const updateAction = (index: number, action: TestScriptSetupAction) => {
-    const next = [...actions]
-    next[index] = action
-    updateSetup({
-      ...setup,
-      action: next,
-    })
-  }
+  const actionsRef = useRef(actions)
+  actionsRef.current = actions
 
-  const removeAction = (index: number) => {
-    const next = actions.filter((_, idx) => idx !== index)
-    updateSetup({
-      ...setup,
+  const setupRef = useRef(setup)
+  setupRef.current = setup
+
+  const updateSetupRef = useRef(updateSetup)
+  updateSetupRef.current = updateSetup
+
+  const updateActionStable = useCallback((index: number, action: TestScriptSetupAction) => {
+    const next = [...actionsRef.current]
+    next[index] = action
+    updateSetupRef.current({
+      ...setupRef.current,
       action: next,
     })
-  }
+  }, [])
+
+  const removeActionStable = useCallback((index: number) => {
+    const next = actionsRef.current.filter((_, idx) => idx !== index)
+    updateSetupRef.current({
+      ...setupRef.current,
+      action: next,
+    })
+  }, [])
 
   return (
     <div className="space-y-4 p-2">
@@ -85,8 +95,8 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
               action={action}
               index={idx}
               sectionType="setup"
-              updateAction={(updated) => updateAction(idx, updated)}
-              removeAction={() => removeAction(idx)}
+              updateAction={updateActionStable}
+              removeAction={removeActionStable}
               availableFixtures={availableFixtures}
               availableProfiles={availableProfiles}
             />

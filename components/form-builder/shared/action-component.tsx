@@ -17,7 +17,7 @@ import type {
   TestScriptTestAction,
   Coding,
 } from "@/types/fhir-enhanced"
-import { useMemo, useState, useEffect, startTransition } from "react"
+import { useMemo, useState, useEffect, startTransition, memo } from "react"
 import { cn } from "@/lib/utils"
 import { AssertionComponent } from "./assertion-component"
 
@@ -110,6 +110,11 @@ const REQUEST_METHOD_OPTIONS: Array<TestScriptSetupActionAssert["requestMethod"]
   "head",
 ]
 
+const RESPONSE_OPTIONS_MAPPED = RESPONSE_OPTIONS.map((v) => ({ value: v!, label: v! }))
+const DIRECTION_OPTIONS_MAPPED = ASSERTION_DIRECTIONS.map((v) => ({ value: v!, label: v! }))
+const OPERATOR_OPTIONS_MAPPED = ASSERTION_OPERATORS.map((v) => ({ value: v!, label: v! }))
+const REQUEST_METHOD_OPTIONS_MAPPED = REQUEST_METHOD_OPTIONS.map((v) => ({ value: v!, label: v! }))
+
 const CONTENT_TYPE_OPTIONS = [
   { value: "application/fhir+json", label: "application/fhir+json" },
   { value: "application/fhir+xml", label: "application/fhir+xml" },
@@ -175,12 +180,18 @@ const FHIR_RESOURCE_TYPES = [
   "VisionPrescription"
 ]
 
+const FHIR_RESOURCE_TYPE_ITEMS = FHIR_RESOURCE_TYPES.map((resourceType) => (
+  <SelectItem key={resourceType} value={resourceType}>
+    {resourceType}
+  </SelectItem>
+))
+
 interface ActionComponentProps<TAction extends ScriptAction> {
   action: TAction
   index: number
   sectionType: SectionType
-  updateAction: (action: TAction) => void
-  removeAction?: () => void
+  updateAction: (index: number, action: TAction) => void
+  removeAction?: (index: number) => void
   availableFixtures?: Array<{ id: string; description?: string }>
   availableProfiles?: Array<{ id: string; reference: string }>
 }
@@ -191,7 +202,7 @@ const ensureCoding = (coding: Coding | undefined, defaultSystem: string): Coding
   ...coding,
 })
 
-export default function ActionComponent<TAction extends ScriptAction>({
+export const ActionComponent = memo(function ActionComponent<TAction extends ScriptAction>({
   action,
   index,
   sectionType,
@@ -278,7 +289,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
   }, [actionAssert, sectionType])
 
   const updateOperation = (partial: Partial<TestScriptSetupActionOperation>) => {
-    updateAction({
+    updateAction(index, {
       ...action,
       operation: {
         ...operation,
@@ -328,7 +339,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
   }
 
   const updateAssert = (assertion: TestScriptSetupActionAssert) => {
-    updateAction({
+    updateAction(index, {
       ...action,
       assert: assertion,
     } as TAction)
@@ -359,7 +370,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
           </p>
         </div>
         {removeAction && (
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={removeAction}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeAction(index)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         )}
@@ -370,10 +381,10 @@ export default function ActionComponent<TAction extends ScriptAction>({
           assertion={actionAssert!}
           updateAssertion={updateAssert}
           removeAssertion={() => {}}
-          responseOptions={RESPONSE_OPTIONS.map((v) => ({ value: v!, label: v! }))}
-          directionOptions={ASSERTION_DIRECTIONS.map((v) => ({ value: v!, label: v! }))}
-          operatorOptions={ASSERTION_OPERATORS.map((v) => ({ value: v!, label: v! }))}
-          requestMethodOptions={REQUEST_METHOD_OPTIONS.map((v) => ({ value: v!, label: v! }))}
+          responseOptions={RESPONSE_OPTIONS_MAPPED}
+          directionOptions={DIRECTION_OPTIONS_MAPPED}
+          operatorOptions={OPERATOR_OPTIONS_MAPPED}
+          requestMethodOptions={REQUEST_METHOD_OPTIONS_MAPPED}
           onAddRequirement={addRequirement}
           onRemoveRequirement={removeRequirement}
           errors={assertionErrors ?? undefined}
@@ -499,11 +510,7 @@ export default function ActionComponent<TAction extends ScriptAction>({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">-- None --</SelectItem>
-                    {FHIR_RESOURCE_TYPES.map((resourceType) => (
-                      <SelectItem key={resourceType} value={resourceType}>
-                        {resourceType}
-                      </SelectItem>
-                    ))}
+                    {FHIR_RESOURCE_TYPE_ITEMS}
                     <SelectItem value="__custom__" className="text-primary font-medium">
                       ✏️ Custom Type...
                     </SelectItem>
@@ -746,4 +753,14 @@ export default function ActionComponent<TAction extends ScriptAction>({
       )}
     </Card>
   )
-}
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.action === nextProps.action &&
+    prevProps.index === nextProps.index &&
+    prevProps.sectionType === nextProps.sectionType &&
+    prevProps.availableFixtures === nextProps.availableFixtures &&
+    prevProps.availableProfiles === nextProps.availableProfiles
+  )
+}) as <TAction extends ScriptAction>(props: ActionComponentProps<TAction>) => React.JSX.Element
+
+export default ActionComponent
