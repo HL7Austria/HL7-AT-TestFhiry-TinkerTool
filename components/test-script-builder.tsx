@@ -22,7 +22,7 @@ export function TestScriptBuilder() {
    * @param newData - Partial TestScript data to merge with the current state
    */
   const updateTestScript = useCallback((newData: Partial<TestScript>) => {
-    setTestScript((prev) => orderTestScriptKeys({ ...prev, ...newData }))
+    setTestScript((prev) => ({ ...prev, ...newData }))
   }, [])
 
   /**
@@ -34,11 +34,16 @@ export function TestScriptBuilder() {
     section: K, 
     data: TestScript[K]
   ) => {
-    setTestScript((prev) => orderTestScriptKeys({
+    setTestScript((prev) => ({
       ...prev,
       [section]: data,
     }))
   }, [])
+
+  // Memoize the ordered TestScript for preview, copy, and export functions
+  const orderedTestScript = useMemo(() => {
+    return orderTestScriptKeys(testScript)
+  }, [testScript])
 
   /**
    * Validates the current TestScript state
@@ -114,7 +119,7 @@ export function TestScriptBuilder() {
         </TabsContent>
 
         <TabsContent value="preview" className="mt-6">
-          <OutputSection testScript={testScript} />
+          <OutputSection testScript={orderedTestScript} />
         </TabsContent>
       </Tabs>
     </div>

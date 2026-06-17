@@ -303,7 +303,7 @@ export function ValidationTab({
               <AccordionTrigger className="text-red-700 hover:text-red-800 dark:text-red-300 dark:hover:text-red-200">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-5 w-5" />
-                  <span className="font-semibold">Fatale Fehler ({fatalIssues.length})</span>
+                  <span className="font-semibold">Fatal Errors ({fatalIssues.length})</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -331,7 +331,7 @@ export function ValidationTab({
               <AccordionTrigger className="text-red-600 hover:text-red-700 dark:text-red-300 dark:hover:text-red-200">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-5 w-5" />
-                  <span className="font-semibold">Fehler ({errorIssues.length})</span>
+                  <span className="font-semibold">Errors ({errorIssues.length})</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -359,7 +359,7 @@ export function ValidationTab({
               <AccordionTrigger className="text-yellow-700 hover:text-yellow-800 dark:text-yellow-300 dark:hover:text-yellow-200">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5" />
-                  <span className="font-semibold">Warnungen ({warningIssues.length})</span>
+                  <span className="font-semibold">Warning ({warningIssues.length})</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -387,7 +387,7 @@ export function ValidationTab({
               <AccordionTrigger className="text-blue-700 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200">
                 <div className="flex items-center gap-2">
                   <Info className="h-5 w-5" />
-                  <span className="font-semibold">Informationen ({infoIssues.length})</span>
+                  <span className="font-semibold">Information ({infoIssues.length})</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -442,7 +442,7 @@ export function ValidationTab({
             <Card className="mt-3">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm">Gesendetes TestScript (JSON)</CardTitle>
+                  <CardTitle className="text-sm">Sent TestScript (JSON)</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -464,7 +464,7 @@ export function ValidationTab({
             <Card className="mt-3">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm">Server-Antwort (OperationOutcome)</CardTitle>
+                  <CardTitle className="text-sm">Server-Response (OperationOutcome)</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"

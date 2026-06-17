@@ -144,6 +144,9 @@ export async function POST(request: Request) {
     const fhirVersion = parseFhirVersion(versionHeader || undefined);
     const fhirConfig = getFhirVersionConfig(fhirVersion);
     
+    // Prüfe, ob eine benutzerdefinierte Server-URL übermittelt wurde
+    const customServerUrl = request.headers.get('X-Server-URL');
+    
     // Prüfe, ob es sich um einen Import handelt (lockere Validierung)
     const isImportMode = request.headers.get('X-Validation-Mode') === 'import';
     
@@ -200,7 +203,10 @@ export async function POST(request: Request) {
     if (extendedValidation.valid) {
       try {
         const formattedTestScript = JSON.stringify(body, null, 2);
-        const fhirServerUrl = fhirConfig.validationEndpoint;
+        // Use custom server URL if provided, otherwise use default from config
+        const fhirServerUrl = customServerUrl 
+          ? `${customServerUrl}/TestScript/$validate`
+          : fhirConfig.validationEndpoint;
         
         console.log(`Using ${fhirVersion} FHIR Server for validation: ${fhirServerUrl}`);
         
@@ -372,38 +378,8 @@ function validateBasicStructure(testScript: Partial<TestScript>, isImportMode = 
       });
     }
 
-    // Check empty arrays
-    if (testScript.setup && Array.isArray(testScript.setup.action) && testScript.setup.action.length === 0) {
-      errors.push({
-        message: 'Setup actions are empty - remove the setup property or add actions',
-        location: ['setup', 'action'],
-        line: 15,
-        column: 5
-      });
-    }
-
-    if (testScript.teardown && Array.isArray(testScript.teardown.action) && testScript.teardown.action.length === 0) {
-      errors.push({
-        message: 'Teardown actions are empty - remove the teardown property or add actions',
-        location: ['teardown', 'action'],
-        line: 25,
-        column: 5
-      });
-    }
-
-    if (Array.isArray(testScript.test)) {
-      testScript.test.forEach((rawTestCase, index: number) => {
-        const testCase = rawTestCase as Partial<TestScriptTest>;
-        if (!Array.isArray(testCase.action) || testCase.action.length === 0) {
-          errors.push({
-            message: `Test ${index + 1}: Must contain at least one action`,
-            location: ['test', index.toString(), 'action'],
-            line: 20 + index * 5,
-            column: 7
-          });
-        }
-      });
-    }
+    // Leere setup/teardown Arrays und leere test cases werden automatisch beim Export entfernt
+    // Keine Validierung erforderlich
   }
 
   return {

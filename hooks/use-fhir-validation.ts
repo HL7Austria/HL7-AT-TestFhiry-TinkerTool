@@ -151,7 +151,8 @@ export function useFhirValidation() {
         headers: {
           "Content-Type": "application/fhir+json",
           "Accept": "application/fhir+json",
-          "X-FHIR-Version": currentVersion // Übermittle Version über Header
+          "X-FHIR-Version": currentVersion, // Übermittle Version über Header
+          "X-Server-URL": serverUrl // Übermittle benutzerdefinierte Server-URL
         },
         body: JSON.stringify(testScript) // Sende nur FHIR-konforme TestScript-Daten
       });

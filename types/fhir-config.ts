@@ -23,22 +23,22 @@ export const FHIR_VERSION_CONFIGS: Record<FhirVersion, FhirVersionConfig> = {
     version: FhirVersion.R4,
     display: 'FHIR R4 (4.0.1)',
     description: 'FHIR Release 4 - Stabile Version, weit verbreitet',
-    validationEndpoint: 'https://hapi.fhir.org/baseR4/TestScript/$validate',
+    validationEndpoint: process.env.NEXT_PUBLIC_FHIR_R4_VALIDATOR_URL || 'https://hapi.fhir.org/baseR4/TestScript/$validate',
     packagePath: 'fhir/r4',
+    isDefault: true,
     capabilities: ['TestScript', 'OperationOutcome', 'Bundle']
   },
   [FhirVersion.R5]: {
     version: FhirVersion.R5,
     display: 'FHIR R5 (5.0.0)',
     description: 'FHIR Release 5 - Neueste Version mit erweiterten Features',
-    validationEndpoint: 'https://hapi.fhir.org/baseR5/TestScript/$validate',
+    validationEndpoint: process.env.NEXT_PUBLIC_FHIR_R5_VALIDATOR_URL || 'https://hapi.fhir.org/baseR5/TestScript/$validate',
     packagePath: 'fhir/r5',
-    isDefault: true,
     capabilities: ['TestScript', 'OperationOutcome', 'Bundle', 'TestReport']
   }
 }
 
-export const DEFAULT_FHIR_VERSION = FhirVersion.R5
+export const DEFAULT_FHIR_VERSION = FhirVersion.R4
 
 /**
  * Get configuration for a specific FHIR version

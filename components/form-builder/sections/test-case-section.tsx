@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -54,16 +55,22 @@ export function TestCaseSection({
     updateField("action", [...actions, newAction])
   }
 
-  const updateAction = (index: number, action: TestScriptTestAction) => {
-    const next = [...actions]
-    next[index] = action
-    updateField("action", next)
-  }
+  const actionsRef = useRef(actions)
+  actionsRef.current = actions
 
-  const removeAction = (index: number) => {
-    const next = actions.filter((_, idx) => idx !== index)
-    updateField("action", next)
-  }
+  const updateFieldRef = useRef(updateField)
+  updateFieldRef.current = updateField
+
+  const updateActionStable = useCallback((index: number, action: TestScriptTestAction) => {
+    const next = [...actionsRef.current]
+    next[index] = action
+    updateFieldRef.current("action", next)
+  }, [])
+
+  const removeActionStable = useCallback((index: number) => {
+    const next = actionsRef.current.filter((_, idx) => idx !== index)
+    updateFieldRef.current("action", next)
+  }, [])
 
   return (
     <div className="space-y-4 p-2">
@@ -128,8 +135,8 @@ export function TestCaseSection({
                 action={action}
                 index={idx}
                 sectionType="test"
-                updateAction={(updated) => updateAction(idx, updated)}
-                removeAction={() => removeAction(idx)}
+                updateAction={updateActionStable}
+                removeAction={removeActionStable}
                 availableFixtures={availableFixtures}
                 availableProfiles={availableProfiles}
               />
