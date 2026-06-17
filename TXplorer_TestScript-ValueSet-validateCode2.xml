@@ -1,0 +1,65 @@
+<TestScript xmlns="http://hl7.org/fhir">  
+    <id value="TXplorer-valueset-validate-code-JSON"/>  
+    <url value="http://cgm.com/fhir/R4/TestScript/terminology-conn-valueset-validate-code-json"/>  
+    <name value="TXplorerTerminologyVSValidateCodeJSON"/>  
+    <title value="TXplorer Testing - Terminology Services - ValueSet Validate Code - JSON"/>  
+    <status value="active"/>  
+    <date value="2026-06-16"/>  
+    <publisher value="CGM Clinical Austria GmbH, Team IHEonFHIR"/>  
+    <description value="TXplorer Testing - Terminology Services - ValueSet Validate Code - JSON Format - Checks are performed for valid codes. There is no setup and teardown as all ValueSet resources are expected to exist on the target system under test."/>  
+    <profile id="ParametersProfile"> 
+        <reference value="http://hl7.org/fhir/StructureDefinition/Parameters"/> 
+    </profile>  
+    <test id="Test-01-a-ValidateExtensionalCase1"> 
+        <name value="Test 01-a Validate extensional-case-1 valid"/>  
+        <description value="Check that the code {http://hl7.org/fhir/administrative-gender}male is in the value set."/>  
+        <action> 
+            <operation> 
+                <type> 
+                    <system value="http://terminology.hl7.org/CodeSystem/testscript-operation-codes"/>  
+                    <code value="validate-code"/> 
+                </type>  
+                <resource value="ValueSet"/>  
+                <description value="Test $validate-code operation on ValueSet extensional-case-1 for a valid code."/>  
+                <accept value="json"/>  
+                <encodeRequestUrl value="false"/>  
+                <params value="$validate-code?system=http://hl7.org/fhir/administrative-gender&amp;code=male"/> 
+            </operation> 
+        </action>  
+        <action> 
+            <assert> 
+                <description value="Confirm that the returned HTTP status is 200(OK)."/>  
+                <response value="okay"/>  
+                <warningOnly value="false"/> 
+            </assert> 
+        </action>  
+        <action> 
+            <assert> 
+                <description value="Confirm that the returned format is JSON. Warning only to allow for review."/>  
+                <contentType value="json"/>  
+                <warningOnly value="true"/> 
+            </assert> 
+        </action>  
+        <action> 
+            <assert> 
+                <description value="Confirm that the returned resource type is Parameters."/>  
+                <resource value="Parameters"/>  
+                <warningOnly value="false"/> 
+            </assert> 
+        </action>  
+        <action> 
+            <assert> 
+                <description value="Confirm that the returned Parameters minimally contains the parameter result with a value true."/>  
+                <expression value="Parameters.parameter.where(name = 'result').value = true"/>  
+                <warningOnly value="false"/> 
+            </assert> 
+        </action>  
+        <action> 
+            <assert> 
+                <description value="Confirm that the returned Parameters minimally contains the parameter display. [Warning only]"/>  
+                <expression value="Parameters.parameter.where(name = 'display').exists()"/>  
+                <warningOnly value="true"/> 
+            </assert> 
+        </action> 
+    </test> 
+</TestScript>

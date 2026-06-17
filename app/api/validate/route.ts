@@ -319,13 +319,17 @@ function validateBasicStructure(testScript: Partial<TestScript>, isImportMode = 
       line: 4,
       column: 3
     });
-  } else if (!['draft', 'active', 'retired', 'unknown'].includes(testScript.status)) {
-    errors.push({
-      message: 'Status must be one of: draft, active, retired, unknown',
-      location: ['status'],
-      line: 4,
-      column: 3
-    });
+  } else {
+    // Normalize status value (trim whitespace) for validation
+    const normalizedStatus = typeof testScript.status === 'string' ? testScript.status.trim() : testScript.status;
+    if (!['draft', 'active', 'retired', 'unknown'].includes(normalizedStatus)) {
+      errors.push({
+        message: 'Status must be one of: draft, active, retired, unknown',
+        location: ['status'],
+        line: 4,
+        column: 3
+      });
+    }
   }
 
   // In normal mode (not import): Extended validation

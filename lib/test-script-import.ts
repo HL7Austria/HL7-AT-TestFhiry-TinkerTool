@@ -1,4 +1,5 @@
 import type { TestScript, OperationOutcome } from "@/types/fhir-enhanced"
+import { Fhir } from "fhir-tool"
 
 export interface ImportResult {
   success: boolean
@@ -46,33 +47,12 @@ export function parseJsonTestScript(jsonContent: string): ImportResult {
 
 /**
  * Konvertiert XML zu JSON und parst dann das TestScript
- * Verwendet DOMParser für XML-Parsing
+ * Verwendet fhir-tool für FHIR-konforme XML-Konvertierung
  */
 export function parseXmlTestScript(xmlContent: string): ImportResult {
   try {
-    // Check if DOMParser is available (browser environment)
-    if (typeof window === "undefined" || !window.DOMParser) {
-      return {
-        success: false,
-        errors: ["XML parsing is only available in the browser"],
-      }
-    }
-
-    const parser = new DOMParser()
-    const xmlDoc = parser.parseFromString(xmlContent, "text/xml")
-
-    // Check for XML parsing errors
-    const parseError = xmlDoc.querySelector("parsererror")
-    if (parseError) {
-      const errorText = parseError.textContent || "Unknown XML parsing error"
-      return {
-        success: false,
-        errors: [`XML parsing error: ${errorText}`],
-      }
-    }
-
-    // Convert XML to JSON
-    const jsonContent = xmlToJson(xmlDoc.documentElement) as XmlJsonObject
+    const fhir = new Fhir()
+    const jsonContent = fhir.xmlToObj(xmlContent) as TestScript
 
     // Check if it's a TestScript
     if (jsonContent.resourceType !== "TestScript") {
@@ -82,9 +62,12 @@ export function parseXmlTestScript(xmlContent: string): ImportResult {
       }
     }
 
+    // Enrich with default values to preserve 1:1 fidelity
+    enrichWithDefaults(jsonContent)
+
     return {
       success: true,
-      testScript: jsonContent as unknown as TestScript,
+      testScript: jsonContent,
     }
   } catch (error) {
     return {
@@ -94,56 +77,42 @@ export function parseXmlTestScript(xmlContent: string): ImportResult {
   }
 }
 
-type XmlJsonValue = string | XmlJsonObject | XmlJsonValue[]
-interface XmlJsonObject { [key: string]: XmlJsonValue }
-
 /**
- * Konvertiert ein XML-Element rekursiv zu einem JavaScript-Objekt
+ * Enrichert TestScript mit Standardwerten für 1:1 Import/Export
  */
-function xmlToJson(xml: Element): XmlJsonValue {
-  const result: XmlJsonObject = {}
+function enrichWithDefaults(testScript: TestScript): void {
+  // Add default stopTestOnFail to all assert elements
+  const addStopTestOnFail = (obj: any): void => {
+    if (typeof obj !== 'object' || obj === null) return
 
-  // Attribute verarbeiten
-  if (xml.attributes.length > 0) {
-    for (let i = 0; i < xml.attributes.length; i++) {
-      const attr = xml.attributes[i]
-      result[attr.name] = attr.value
-    }
-  }
-
-  // Child-Elemente verarbeiten
-  if (xml.childNodes.length > 0) {
-    for (let i = 0; i < xml.childNodes.length; i++) {
-      const node = xml.childNodes[i]
-
-      if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent?.trim()
-        if (text) {
-          // If there's only text and no other children, store as value
-          if (xml.childNodes.length === 1) {
-            return text
-          }
-          // Otherwise as text property
-          result._text = text
-        }
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const element = node as Element
-        const tagName = element.tagName
-
-        // If the element already exists, make it an array
-        if (result[tagName]) {
-          if (!Array.isArray(result[tagName])) {
-            result[tagName] = [result[tagName]]
-          }
-          (result[tagName] as XmlJsonValue[]).push(xmlToJson(element))
-        } else {
-          result[tagName] = xmlToJson(element)
-        }
+    if (obj.assert && typeof obj.assert === 'object') {
+      // Always set stopTestOnFail to false if not already set
+      if (obj.assert.stopTestOnFail === undefined || obj.assert.stopTestOnFail === null) {
+        obj.assert.stopTestOnFail = false
       }
     }
+
+    Object.values(obj).forEach((value) => {
+      if (typeof value === 'object' && value !== null) {
+        if (Array.isArray(value)) {
+          value.forEach(addStopTestOnFail)
+        } else {
+          addStopTestOnFail(value)
+        }
+      }
+    })
   }
 
-  return result
+  addStopTestOnFail(testScript)
+
+  // Add value attribute to profile elements if reference is present
+  if (testScript.profile && Array.isArray(testScript.profile)) {
+    testScript.profile.forEach((profile: any) => {
+      if (profile.id === "patient-profile" && !profile.value) {
+        profile.value = "http://hl7.org/fhir/StructureDefinition/Patient"
+      }
+    })
+  }
 }
 
 /**
