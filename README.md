@@ -315,20 +315,132 @@ npm run build        # Produktions-Build
 npm run start        # Produktions-Server
 ```
 
-### Beispiel-Workflows
+## Quick Start Tutorial
 
-**TestScript erstellen:**
-1. Anwendung starten
-2. Grundinformationen eingeben
-3. Metadaten konfigurieren
-4. Test-Cases hinzufügen
-5. Validierung durchführen
-6. Export als XML/JSON
+Dieses Tutorial führt Sie durch die Erstellung Ihres ersten FHIR® TestScripts mit TestFhiry TinkerTool.
 
-**Validierung:**
-- Automatische Validierung bei Änderungen
-- Manuelle Validierung über Validierung-Tab
-- Fehler werden in Echtzeit angezeigt
+### Schritt 1: Installation
+
+1. **Repository klonen**
+   ```bash
+   git clone https://github.com/HL7Austria/HL7-AT-TestFhiry-TinkerTool.git
+   cd HL7-AT-TestFhiry-TinkerTool
+   ```
+
+2. **Abhängigkeiten installieren**
+   ```bash
+   npm install
+   ```
+
+3. **Entwicklungsserver starten**
+   ```bash
+   npm run dev
+   ```
+
+4. **Browser öffnen**
+   - Navigieren Sie zu `http://localhost:3000`
+   - Die Anwendung sollte automatisch im Browser öffnen
+
+### Schritt 2: Erste Schritte mit der Benutzeroberfläche
+
+Nach dem Öffnen der Anwendung sehen Sie:
+
+- **Links**: Navigationsleiste mit Tabs für verschiedene Abschnitte
+- **Rechts**: Hauptarbeitsbereich mit dem Form-Builder
+
+### Schritt 3: Ein TestScript erstellen
+
+#### 3.1 Grundinformationen ausfüllen
+
+1. Klicken Sie auf den Tab "Form Builder"
+2. Wählen Sie im linken Panel die Sektion "Basic Information"
+3. Füllen Sie die Pflichtfelder aus:
+   - **Name**: Geben Sie Ihrem TestScript einen Namen (z.B. "Patient Read Test")
+   - **Status**: Wählen Sie "active" oder "draft"
+   - **URL**: Geben Sie eine eindeutige URL ein (z.B. "http://example.org/TestScript/PatientRead")
+
+#### 3.2 Metadaten konfigurieren
+
+1. Wählen Sie die Sektion "Metadata"
+2. Fügen Sie Capabilities hinzu, die Ihr TestScript benötigt
+3. Geben Sie Links zu relevanten Spezifikationen oder Dokumentation an
+
+#### 3.3 Test-Systeme definieren
+
+1. Wählen Sie die Sektion "Systems & Endpoints"
+2. Definieren Sie die Test-Systeme, die Sie testen möchten
+3. Konfigurieren Sie Origin und Destination Mappings
+
+#### 3.4 Fixtures hinzufügen (optional)
+
+1. Wählen Sie die Sektion "Fixtures & Profiles"
+2. Fügen Sie vorbereitete Ressourcen hinzu, die in Ihren Tests verwendet werden
+3. Referenzieren Sie Profile, die Sie validieren möchten
+
+#### 3.5 Test-Cases erstellen
+
+1. Wählen Sie die Sektion "Test Scenarios"
+2. Klicken Sie auf "Add Test Case"
+3. Geben Sie dem Test Case einen Namen und eine Beschreibung
+4. Fügen Sie Actions und Assertions hinzu:
+   - **Operation**: Definieren Sie die FHIR®-Operation (z.B. READ, CREATE, UPDATE)
+   - **Assertion**: Validieren Sie die Antwort (z.B. Status-Code, Response-Header, Inhalt)
+
+#### 3.6 Setup und Teardown konfigurieren (optional)
+
+1. **Setup**: Fügen Sie Vorbereitungs-Operationen vor den eigentlichen Tests hinzu
+2. **Teardown**: Fügen Sie Bereinigungs-Operationen nach den Tests hinzu
+
+### Schritt 4: TestScript validieren
+
+1. Klicken Sie auf den Tab "Validation"
+2. Geben Sie die URL eines FHIR®-Servers ein (z.B. `https://hapi.fhir.org/baseR5`)
+3. Klicken Sie auf "Validate Now"
+4. Warten Sie auf das Validierungsergebnis
+5. Überprüfen Sie:
+   - **Fatal Errors**: Kritische Fehler, die behoben werden müssen
+   - **Errors**: Fehler, die die Validierung fehlschlagen lassen
+   - **Warnings**: Warnungen, die behoben werden sollten
+   - **Informationen**: Hinweise zur Verbesserung
+
+### Schritt 5: TestScript exportieren
+
+1. Klicken Sie auf den Tab "JSON View" oder "XML View"
+2. Überprüfen Sie den generierten Code
+3. Klicken Sie auf "Copy to Clipboard" oder "Download" um das TestScript zu exportieren
+
+### Schritt 6: TestScript importieren (optional)
+
+1. Klicken Sie auf "Import TestScript"
+2. Wählen Sie eine vorhandene XML oder JSON Datei
+3. Das TestScript wird automatisch geladen und kann bearbeitet werden
+
+### Tipps für Einsteiger
+
+- **Starten Sie einfach**: Beginnen Sie mit einem einfachen READ-Operation Test
+- **Validieren Sie oft**: Validieren Sie regelmäßig während der Entwicklung
+- **Nutzen Sie die Vorschau**: Die Live-Vorschau hilft Ihnen, die Struktur zu verstehen
+- **Verwenden Sie Templates**: Erstellen Sie Templates für häufige Test-Szenarien
+- **Lesen Sie die Fehlermeldungen**: Die Validierung gibt detaillierte Hinweise zur Fehlerbehebung
+
+### Häufige Probleme und Lösungen
+
+**Problem**: Validierung schlägt fehl mit "Connection Error"
+- **Lösung**: Überprüfen Sie die FHIR®-Server-URL und Ihre Internetverbindung
+
+**Problem**: TestScript wird nicht korrekt generiert
+- **Lösung**: Stellen Sie sicher, dass alle Pflichtfelder ausgefüllt sind
+
+**Problem**: Assertion schlägt fehl
+- **Lösung**: Überprüfen Sie den Pfad und die Operator-Konfiguration
+
+### Nächste Schritte
+
+Nachdem Sie Ihr erstes TestScript erstellt haben, können Sie:
+- Komplexere Test-Szenarien erstellen
+- Variablen für dynamische Tests verwenden
+- Implementation Guides konfigurieren
+- TestScripts für verschiedene FHIR®-Versionen erstellen
 
 ## Deployment
 
