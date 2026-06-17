@@ -359,7 +359,7 @@ export function ValidationTab({
               <AccordionTrigger className="text-yellow-700 hover:text-yellow-800 dark:text-yellow-300 dark:hover:text-yellow-200">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5" />
-                  <span className="font-semibold">Warnungen ({warningIssues.length})</span>
+                  <span className="font-semibold">Warning ({warningIssues.length})</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
