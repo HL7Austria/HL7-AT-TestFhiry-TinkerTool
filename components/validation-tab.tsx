@@ -387,7 +387,7 @@ export function ValidationTab({
               <AccordionTrigger className="text-blue-700 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200">
                 <div className="flex items-center gap-2">
                   <Info className="h-5 w-5" />
-                  <span className="font-semibold">Informationen ({infoIssues.length})</span>
+                  <span className="font-semibold">Information ({infoIssues.length})</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -442,7 +442,7 @@ export function ValidationTab({
             <Card className="mt-3">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm">Gesendetes TestScript (JSON)</CardTitle>
+                  <CardTitle className="text-sm">Sent TestScript (JSON)</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -464,7 +464,7 @@ export function ValidationTab({
             <Card className="mt-3">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm">Server-Antwort (OperationOutcome)</CardTitle>
+                  <CardTitle className="text-sm">Server-Response (OperationOutcome)</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
