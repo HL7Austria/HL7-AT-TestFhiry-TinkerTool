@@ -52,7 +52,6 @@ const TESTSCRIPT_KEY_ORDER: string[] = [
   "teardown",
   // Project-specific extensions (not in FHIR spec, appended at end)
   "testSystem",
-  "common",
 ]
 
 // Origin key order
@@ -222,8 +221,6 @@ const ASSERT_KEY_ORDER: string[] = [
   "value",
   "warningOnly",
   "requirement",
-  // Project-specific extension
-  "details",
 ]
 
 // Assert requirement key order
@@ -259,21 +256,6 @@ const TEARDOWN_ACTION_KEY_ORDER: string[] = [
   "extension",
   "modifierExtension",
   "operation",
-]
-
-// Common (project-specific) key order
-const COMMON_KEY_ORDER: string[] = [
-  "key",
-  "name",
-  "description",
-  "parameter",
-  "action",
-]
-
-// Common parameter key order
-const COMMON_PARAMETER_KEY_ORDER: string[] = [
-  "name",
-  "value",
 ]
 
 /**
@@ -477,23 +459,6 @@ export function orderTestScriptKeys(testScript: TestScript): TestScript {
       teardown.action = (teardown.action as Record<string, unknown>[]).map(orderTeardownAction)
     }
     ordered.teardown = teardown
-  }
-
-  // Common (project-specific)
-  if (ordered.common && Array.isArray(ordered.common)) {
-    ordered.common = (ordered.common as Record<string, unknown>[]).map(common => {
-      const orderedCommon = orderObject(common, COMMON_KEY_ORDER)
-      if (orderedCommon.parameter && Array.isArray(orderedCommon.parameter)) {
-        orderedCommon.parameter = orderArray(
-          orderedCommon.parameter as Record<string, unknown>[],
-          COMMON_PARAMETER_KEY_ORDER
-        )
-      }
-      if (orderedCommon.action && Array.isArray(orderedCommon.action)) {
-        orderedCommon.action = (orderedCommon.action as Record<string, unknown>[]).map(orderAction)
-      }
-      return orderedCommon
-    })
   }
 
   return ordered as unknown as TestScript

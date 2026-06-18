@@ -18,11 +18,18 @@ export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionPro
   const entries = useMemo(() => profiles ?? [], [profiles])
   const [newProfileId, setNewProfileId] = useState("")
   const [newProfileRef, setNewProfileRef] = useState("")
+  const [validationError, setValidationError] = useState("")
 
   const addProfile = () => {
     const id = newProfileId.trim()
     const reference = newProfileRef.trim()
-    if (!id || !reference) return
+    
+    if (!id || !reference) {
+      setValidationError("Beide Felder (ID und Reference) müssen ausgefüllt werden.")
+      return
+    }
+    
+    setValidationError("")
     updateProfiles([...(entries ?? []), { id, reference }])
     setNewProfileId("")
     setNewProfileRef("")
@@ -32,6 +39,11 @@ export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionPro
     const next = [...entries]
     next[idx] = { ...next[idx], [field]: value }
     updateProfiles(next)
+  }
+
+  const handleInputChange = (setter: (value: string) => void, value: string) => {
+    setValidationError("")
+    setter(value)
   }
 
   const removeProfile = (idx: number) => {
@@ -57,8 +69,9 @@ export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionPro
             <Input
               id="new-profile-id"
               value={newProfileId}
-              onChange={(event) => setNewProfileId(event.target.value)}
+              onChange={(event) => handleInputChange(setNewProfileId, event.target.value)}
               placeholder="patient-profile"
+              className={validationError ? "border-destructive" : ""}
             />
           </div>
           <div>
@@ -66,11 +79,15 @@ export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionPro
             <Input
               id="new-profile-ref"
               value={newProfileRef}
-              onChange={(event) => setNewProfileRef(event.target.value)}
+              onChange={(event) => handleInputChange(setNewProfileRef, event.target.value)}
               placeholder="http://hl7.at/fhir/HL7ATCoreProfiles/4.0.1/StructureDefinition/at-core-patient"
+              className={validationError ? "border-destructive" : ""}
             />
           </div>
         </div>
+        {validationError && (
+          <p className="text-sm text-destructive">{validationError}</p>
+        )}
         <Button variant="outline" onClick={addProfile} className="flex items-center gap-1">
           <Plus className="h-4 w-4" />
           Profil hinzufügen

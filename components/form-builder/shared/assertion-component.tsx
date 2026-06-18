@@ -388,32 +388,17 @@ export const AssertionComponent = memo(function AssertionComponent({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <div>
-          <Label htmlFor="assertion-details-text">Details Text</Label>
-          <Input
-            id="assertion-details-text"
-            value={assertion.details?.text ?? ""}
-            onChange={(event) =>
-              updateField("details", {
-                ...assertion.details,
-                text: event.target.value || undefined,
-              })
-            }
-          />
-        </div>
-        <div className="rounded-md border p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="assertion-navigation-links">Navigation Links</Label>
-              <p className="text-xs text-muted-foreground">Bundle contains links first/last/next.</p>
-            </div>
-            <Switch
-              id="assertion-navigation-links"
-              checked={assertion.navigationLinks ?? false}
-              onCheckedChange={(checked) => updateField("navigationLinks", checked)}
-            />
+      <div className="rounded-md border p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label htmlFor="assertion-navigation-links">Navigation Links</Label>
+            <p className="text-xs text-muted-foreground">Bundle contains links first/last/next.</p>
           </div>
+          <Switch
+            id="assertion-navigation-links"
+            checked={assertion.navigationLinks ?? false}
+            onCheckedChange={(checked) => updateField("navigationLinks", checked)}
+          />
         </div>
       </div>
 

@@ -48,7 +48,6 @@ export type TestScriptTestAction = Omit<FhirTestScriptTestAction, 'assert'> & {
 export type TestScriptSetup = FhirTestScriptSetup;
 export type TestScriptSetupAction = FhirTestScriptSetupAction;
 export type TestScriptSetupActionAssert = FhirTestScriptSetupActionAssert & {
-  details?: FhirCodeableConcept;
   stopTestOnFail?: boolean;
 };
 export type TestScriptSetupActionOperation = FhirTestScriptSetupActionOperation;
