@@ -130,7 +130,7 @@ function addStopTestOnFailToXml(xml: string): string {
       const indentMatch = lastLine.match(/^(\s*)/)
       const indent = indentMatch ? indentMatch[1] : '  '
       // Add stopTestOnFail element before the closing </assert>
-      return `${openTag}${content}${indent}<stopTestOnFail value="false"/>${closeTag}`
+      return `${openTag}${content}\n${indent}<stopTestOnFail value="false"/>${closeTag}`
     }
     return match
   })
