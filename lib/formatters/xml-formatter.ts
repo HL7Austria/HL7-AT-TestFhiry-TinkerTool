@@ -32,13 +32,33 @@ function enrichWithDefaults(testScript: TestScript): TestScript {
 
   addStopTestOnFail(enriched)
 
-  // Add value attribute to profile elements if reference is present
+  // Convert consolidated profile format to split FHIR format (profile + _profile)
   if (enriched.profile && Array.isArray(enriched.profile)) {
-    enriched.profile.forEach((profile: any) => {
-      if (profile.reference && !profile.value) {
-        profile.value = profile.reference
-      }
-    })
+    const profiles = enriched.profile as any[]
+    
+    // Check if profiles are in consolidated format (objects with id and reference)
+    if (profiles.some((p: any) => p.id && p.reference)) {
+      const profileUrls: string[] = []
+      const profileExtensions: any[] = []
+
+      profiles.forEach((profile: any) => {
+        if (profile.id && profile.reference) {
+          profileUrls.push(profile.reference)
+          profileExtensions.push({ id: profile.id })
+        }
+      })
+
+      // Replace with split format
+      enriched.profile = profileUrls as any
+      enriched._profile = profileExtensions as any
+    } else {
+      // Handle existing format: add value attribute if reference is present
+      enriched.profile.forEach((profile: any) => {
+        if (profile.reference && !profile.value) {
+          profile.value = profile.reference
+        }
+      })
+    }
   }
 
   return enriched
@@ -98,14 +118,19 @@ function formatXml(xml: string): string {
 }
 
 /**
- * Fügt stopTestOnFail="false" zu allen assert-Elementen hinzu, die dieses Attribut nicht haben
+ * Fügt <stopTestOnFail value="false"/> als Kindelement zu allen assert-Elementen hinzu, die dieses Element nicht haben
  */
 function addStopTestOnFailToXml(xml: string): string {
-  // Add stopTestOnFail="false" to <assert> elements that don't have it
-  let result = xml.replace(/<assert([^>]*)>/g, (match, attrs) => {
-    if (!attrs.includes('stopTestOnFail')) {
-      // Add stopTestOnFail before the closing >
-      return `<assert${attrs} stopTestOnFail="false">`
+  // Add <stopTestOnFail value="false"/> as child element to <assert> elements that don't have it
+  let result = xml.replace(/(<assert[^>]*>\n)([\s\S]*?)(\n\s*<\/assert>)/g, (match, openTag, content, closeTag) => {
+    if (!content.includes('<stopTestOnFail')) {
+      // Detect indentation from the content (use the indentation of the last line with content)
+      const lines = content.split('\n').filter((line: string) => line.trim())
+      const lastLine = lines[lines.length - 1] || ''
+      const indentMatch = lastLine.match(/^(\s*)/)
+      const indent = indentMatch ? indentMatch[1] : '  '
+      // Add stopTestOnFail element before the closing </assert>
+      return `${openTag}${content}${indent}<stopTestOnFail value="false"/>${closeTag}`
     }
     return match
   })

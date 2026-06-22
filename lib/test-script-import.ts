@@ -33,6 +33,9 @@ export function parseJsonTestScript(jsonContent: string): ImportResult {
       }
     }
 
+    // Reorder fields to put profile and _profile next to each other
+    reorderProfileFields(testScript)
+
     return {
       success: true,
       testScript,
@@ -43,6 +46,45 @@ export function parseJsonTestScript(jsonContent: string): ImportResult {
       errors: [`JSON parsing error: ${error instanceof Error ? error.message : String(error)}`],
     }
   }
+}
+
+/**
+ * Reorders object fields to put profile and _profile next to each other
+ */
+function reorderProfileFields(obj: any): void {
+  if (!obj || typeof obj !== 'object') return
+
+  // If this object has both profile and _profile, reorder them to be adjacent
+  if (obj.profile !== undefined && obj._profile !== undefined) {
+    const profileValue = obj.profile
+    const _profileValue = obj._profile
+
+    // Create new object with profile and _profile adjacent
+    const newObj: any = {}
+    Object.keys(obj).forEach(key => {
+      if (key === 'profile') {
+        newObj.profile = profileValue
+        newObj._profile = _profileValue
+      } else if (key !== '_profile') {
+        newObj[key] = obj[key]
+      }
+    })
+
+    // Replace original object
+    Object.keys(obj).forEach(key => delete obj[key])
+    Object.keys(newObj).forEach(key => obj[key] = newObj[key])
+  }
+
+  // Recursively process nested objects
+  Object.values(obj).forEach((value) => {
+    if (typeof value === 'object' && value !== null) {
+      if (Array.isArray(value)) {
+        value.forEach(reorderProfileFields)
+      } else {
+        reorderProfileFields(value)
+      }
+    }
+  })
 }
 
 /**
@@ -61,6 +103,9 @@ export function parseXmlTestScript(xmlContent: string): ImportResult {
         errors: [`Invalid ResourceType: ${jsonContent.resourceType}. Expected: TestScript`],
       }
     }
+
+    // Reorder fields to put profile and _profile next to each other
+    reorderProfileFields(jsonContent)
 
     // Enrich with default values to preserve 1:1 fidelity
     enrichWithDefaults(jsonContent)
