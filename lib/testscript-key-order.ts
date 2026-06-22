@@ -239,6 +239,7 @@ const TEST_KEY_ORDER: string[] = [
   "modifierExtension",
   "name",
   "description",
+  "stopTestOnFail",
   "action",
 ]
 
