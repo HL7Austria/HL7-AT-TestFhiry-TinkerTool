@@ -105,13 +105,34 @@ function enrichWithDefaults(testScript: TestScript): void {
 
   addStopTestOnFail(testScript)
 
-  // Add value attribute to profile elements if reference is present
+  // Handle profile in different FHIR formats:
+  // 1. Split format: profile (strings) + _profile (objects with id)
+  // 2. Consolidated format: profile (objects with id and reference)
   if (testScript.profile && Array.isArray(testScript.profile)) {
-    testScript.profile.forEach((profile: any) => {
-      if (profile.id === "patient-profile" && !profile.value) {
-        profile.value = "http://hl7.org/fhir/StructureDefinition/Patient"
-      }
-    })
+    // Check if profile is split (strings in profile, objects in _profile)
+    if (testScript._profile && Array.isArray(testScript._profile)) {
+      const profileUrls = testScript.profile as unknown as string[]
+      const profileExtensions = testScript._profile as unknown as any[]
+
+      // Merge into consolidated format
+      testScript.profile = profileUrls.map((url: string, idx: number) => {
+        const extension = profileExtensions[idx]
+        return {
+          id: extension?.id || `profile-${idx}`,
+          reference: url,
+        }
+      }) as any
+
+      // Remove _profile after merging
+      delete testScript._profile
+    } else {
+      // Handle consolidated format: add value attribute if reference is present
+      testScript.profile.forEach((profile: any) => {
+        if (profile.id === "patient-profile" && !profile.value) {
+          profile.value = "http://hl7.org/fhir/StructureDefinition/Patient"
+        }
+      })
+    }
   }
 }
 
