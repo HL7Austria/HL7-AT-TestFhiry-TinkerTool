@@ -123,9 +123,9 @@ graph TD
     C --> D
     D --> E["FHIR® Validation Service"]
     D --> F["XML/JSON Formatters"]
-    E --> G["External FHIR® Server"]
+    E --> J["/api/validate Route"]
+    J --> G["External FHIR® Server"]
     F --> H["Output Views"]
-    D --> I["TypeScript Types"]
 ```
 
 ### Sequenzdiagramm
@@ -135,20 +135,28 @@ sequenceDiagram
     participant U as User
     participant UI as "TestScript Builder"
     participant S as "State Management"
-    participant V as "Validation Service"
     participant F as Formatters
+    participant V as "Validation Hook"
+    participant API as "/api/validate"
     participant FS as "FHIR® Server"
-    
+
+    Note over U,FS: Live-Vorschau (automatisch bei jeder Änderung)
     U->>UI: TestScript bearbeiten
     UI->>S: State aktualisieren
-    S->>V: Validierung anfordern
-    V->>FS: FHIR®-Validierung
-    FS-->>V: Validierungsergebnis
-    V-->>S: Ergebnis zurückgeben
     S->>F: Formatierung anfordern
     F-->>S: XML/JSON generiert
     S-->>UI: Aktualisierte Daten
     UI-->>U: Live-Vorschau anzeigen
+
+    Note over U,FS: Validierung (explizit durch Benutzer ausgelöst)
+    U->>UI: Validierung anfordern
+    UI->>V: Validierung starten
+    V->>API: POST /api/validate
+    API->>FS: FHIR®-Validierung
+    FS-->>API: Validierungsergebnis
+    API-->>V: Ergebnis zurückgeben
+    V-->>UI: Validierungsstatus
+    UI-->>U: Validierungsergebnisse anzeigen
 ```
 
 ### UML-Klassendiagramm
@@ -160,42 +168,45 @@ classDiagram
         +name: string
         +status: string
         +url: string
-        +metadata: TestScriptMetadata
-        +test: TestScriptTest[]
+        +metadata?: TestScriptMetadata
+        +setup?: TestScriptSetup
+        +teardown?: TestScriptTeardown
+        +fixture?: TestScriptFixture[]
+        +test?: TestScriptTest[]
     }
-    
+
     class TestScriptTest {
-        +name: string
-        +description: string
-        +action: Action[]
+        +name?: string
+        +description?: string
+        +action?: TestScriptTestAction[]
     }
-    
-    class Action {
-        +operation: Operation
-        +assert: Assertion
+
+    class TestScriptTestAction {
+        +operation?: Operation
+        +assert?: Assertion
     }
-    
+
     class Operation {
-        +type: CodeableConcept
-        +resource: string
-        +url: string
-        +method: string
+        +type?: CodeableConcept
+        +resource?: string
+        +url?: string
+        +method?: string
     }
-    
+
     class Assertion {
-        +description: string
-        +response: string
-        +operator: string
-        +path: string
+        +description?: string
+        +response?: string
+        +operator?: string
+        +path?: string
     }
+
+    note for TestScriptTestAction "Per FHIR-Spec: entweder operation ODER assert – nie beides gleichzeitig"
 
     %% Beziehungen (Aggregation: o--)
-    TestScript "1" o-- "many" TestScriptTest : contains
-    TestScriptTest "1" o-- "many" Action : has
-    Action "1" o-- "1" Operation : contains
-    Action "1" o-- "1" Assertion : contains
-
-```
+    TestScript "1" o-- "0..*" TestScriptTest : contains
+    TestScriptTest "1" o-- "0..*" TestScriptTestAction : has
+    TestScriptTestAction "1" o-- "0..1" Operation : contains
+    TestScriptTestAction "1" o-- "0..1" Assertion : contains
 
 ## Codebase Overview
 

@@ -264,6 +264,7 @@ function FormBuilder({ testScript, updateTestScript, updateSection }: FormBuilde
             <ProfilesSection
               profiles={testScript.profile}
               updateProfiles={(value) => updateSection("profile", value)}
+              updateTestScript={updateTestScript}
             />
           </div>
         )

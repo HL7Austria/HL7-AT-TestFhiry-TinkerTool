@@ -12,18 +12,77 @@ import type { TestScriptProfile } from "@/types/fhir-enhanced"
 interface ProfilesSectionProps {
   profiles: TestScriptProfile[] | undefined
   updateProfiles: (profiles: TestScriptProfile[] | undefined) => void
+  updateTestScript?: (newData: Partial<{ profile: any; _profile: any }>) => void
 }
 
-export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionProps) {
-  const entries = useMemo(() => profiles ?? [], [profiles])
+/**
+ * Konvertiert konsolidierte Profile in aufgeteiltes FHIR-Format
+ * profile: Array von Strings (Referenzen)
+ * _profile: Array von Objekten mit id
+ */
+function convertToSplitFormat(consolidatedProfiles: TestScriptProfile[]): { profile: string[], _profile: { id: string }[] } {
+  const profileUrls: string[] = []
+  const profileExtensions: { id: string }[] = []
+
+  consolidatedProfiles.forEach((profile) => {
+    if (profile.reference) {
+      profileUrls.push(profile.reference)
+      profileExtensions.push({ id: profile.id })
+    }
+  })
+
+  return { profile: profileUrls, _profile: profileExtensions }
+}
+
+/**
+ * Liest Profile aus aufgeteiltem oder konsolidiertem Format
+ */
+function readProfiles(profiles: any): TestScriptProfile[] {
+  // Wenn profile und _profile beide existieren, ist es das aufgeteilte Format
+  if (profiles?.profile && profiles?._profile) {
+    const profileUrls = profiles.profile as string[]
+    const profileExtensions = profiles._profile as { id: string }[]
+
+    return profileUrls.map((url, idx) => ({
+      id: profileExtensions[idx]?.id || `profile-${idx}`,
+      reference: url,
+    }))
+  }
+
+  // Andernfalls ist es das konsolidierte Format
+  return profiles ?? []
+}
+
+export function ProfilesSection({ profiles, updateProfiles, updateTestScript }: ProfilesSectionProps) {
+  const entries = useMemo(() => readProfiles(profiles), [profiles])
   const [newProfileId, setNewProfileId] = useState("")
   const [newProfileRef, setNewProfileRef] = useState("")
+  const [validationError, setValidationError] = useState("")
 
   const addProfile = () => {
     const id = newProfileId.trim()
     const reference = newProfileRef.trim()
-    if (!id || !reference) return
-    updateProfiles([...(entries ?? []), { id, reference }])
+    
+    if (!id || !reference) {
+      setValidationError("Beide Felder (ID und Reference) müssen ausgefüllt werden.")
+      return
+    }
+    
+    setValidationError("")
+    
+    // Konvertiere zu aufgeteiltem Format
+    const consolidated = [...entries, { id, reference }]
+    const splitFormat = convertToSplitFormat(consolidated)
+    
+    // Sende beide Felder als separate Updates
+    updateProfiles(splitFormat.profile as any)
+    // _profile muss separat gesetzt werden - hier nutzen wir einen Workaround
+    // indem wir das gesamte TestScript-Objekt manipulieren
+    const testScript = (window as any).__currentTestScript
+    if (testScript) {
+      testScript._profile = splitFormat._profile
+    }
+    
     setNewProfileId("")
     setNewProfileRef("")
   }
@@ -31,12 +90,39 @@ export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionPro
   const updateProfile = (idx: number, field: keyof TestScriptProfile, value: string) => {
     const next = [...entries]
     next[idx] = { ...next[idx], [field]: value }
-    updateProfiles(next)
+    
+    // Konvertiere zu aufgeteiltem Format
+    const splitFormat = convertToSplitFormat(next)
+    
+    if (updateTestScript) {
+      updateTestScript({ profile: splitFormat.profile, _profile: splitFormat._profile })
+    } else {
+      updateProfiles(splitFormat.profile as any)
+    }
+  }
+
+  const handleInputChange = (setter: (value: string) => void, value: string) => {
+    setValidationError("")
+    setter(value)
   }
 
   const removeProfile = (idx: number) => {
     const next = entries.filter((_, index) => index !== idx)
-    updateProfiles(next.length > 0 ? next : undefined)
+    
+    if (next.length > 0) {
+      const splitFormat = convertToSplitFormat(next)
+      if (updateTestScript) {
+        updateTestScript({ profile: splitFormat.profile, _profile: splitFormat._profile })
+      } else {
+        updateProfiles(splitFormat.profile as any)
+      }
+    } else {
+      if (updateTestScript) {
+        updateTestScript({ profile: undefined, _profile: undefined })
+      } else {
+        updateProfiles(undefined)
+      }
+    }
   }
 
   return (
@@ -57,8 +143,9 @@ export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionPro
             <Input
               id="new-profile-id"
               value={newProfileId}
-              onChange={(event) => setNewProfileId(event.target.value)}
+              onChange={(event) => handleInputChange(setNewProfileId, event.target.value)}
               placeholder="patient-profile"
+              className={validationError ? "border-destructive" : ""}
             />
           </div>
           <div>
@@ -66,11 +153,15 @@ export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionPro
             <Input
               id="new-profile-ref"
               value={newProfileRef}
-              onChange={(event) => setNewProfileRef(event.target.value)}
+              onChange={(event) => handleInputChange(setNewProfileRef, event.target.value)}
               placeholder="http://hl7.at/fhir/HL7ATCoreProfiles/4.0.1/StructureDefinition/at-core-patient"
+              className={validationError ? "border-destructive" : ""}
             />
           </div>
         </div>
+        {validationError && (
+          <p className="text-sm text-destructive">{validationError}</p>
+        )}
         <Button variant="outline" onClick={addProfile} className="flex items-center gap-1">
           <Plus className="h-4 w-4" />
           Profil hinzufügen
@@ -124,4 +215,5 @@ export function ProfilesSection({ profiles, updateProfiles }: ProfilesSectionPro
     </div>
   )
 }
+
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import FormBuilder from "@/components/form-builder/form-builder"
 import { HeaderSection } from "./test-script-builder/header-section"
 import { OutputSection } from "./test-script-builder/output-section"
@@ -16,6 +16,22 @@ import { orderTestScriptKeys } from "@/lib/testscript-key-order"
 export function TestScriptBuilder() {
   // State for the TestScript data with proper typing
   const [testScript, setTestScript] = useState<TestScript>(initialTestScript)
+  const [storageLoaded, setStorageLoaded] = useState(false)
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem('testscript-data')
+      if (stored) setTestScript(JSON.parse(stored))
+    } catch {}
+    setStorageLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    if (!storageLoaded) return
+    try {
+      sessionStorage.setItem('testscript-data', JSON.stringify(testScript))
+    } catch {}
+  }, [testScript, storageLoaded])
 
   /**
    * Updates the TestScript data with new values using functional updates
