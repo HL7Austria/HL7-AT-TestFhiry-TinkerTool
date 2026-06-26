@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash2 } from "lucide-react"
 import type { TestScriptTest, TestScriptTestAction } from "@/types/fhir-enhanced"
+import { useFhirVersion } from "@/lib/fhir-version-context"
 import ActionComponent from "../shared/action-component"
 
 interface TestCaseSectionProps {
@@ -27,6 +28,7 @@ export function TestCaseSection({
   availableProfiles = [],
 }: TestCaseSectionProps) {
   const actions = test.action ?? []
+  const { currentVersion } = useFhirVersion()
 
   const updateField = <K extends keyof TestScriptTest>(field: K, value: TestScriptTest[K]) => {
     updateTest({
@@ -49,7 +51,7 @@ export function TestCaseSection({
       assert: {
         response: "okay",
         warningOnly: false,
-        stopTestOnFail: true,
+        stopTestOnFail: currentVersion === "R5",
       },
     }
     updateField("action", [...actions, newAction])

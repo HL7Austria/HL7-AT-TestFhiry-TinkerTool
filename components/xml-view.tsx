@@ -28,13 +28,14 @@ interface XmlViewProps {
 
 export function XmlView({ testScript, validationState: _validationState }: XmlViewProps) {
   const { currentVersion } = useFhirVersion()
+  const isR5 = currentVersion === "R5"
   
   // Validation errors are NOT shown in XML, as line numbers don't match
   // Validation is performed against JSON, so errors are only shown in JSON view
   const validationErrors: never[] = []
 
   const copyToClipboard = async () => {
-    const content = formatToXml(testScript)
+    const content = formatToXml(testScript, isR5)
     try {
       await clientOnly.clipboard.writeText(content)
       toast.success("Copied to clipboard", {
@@ -49,7 +50,7 @@ export function XmlView({ testScript, validationState: _validationState }: XmlVi
   }
 
   const downloadContent = () => {
-    const content = formatToXml(testScript)
+    const content = formatToXml(testScript, isR5)
     const filename = `testscript_${testScript.id || "export"}.xml`
 
     clientOnly.download.file(content, filename, "application/xml")
@@ -86,7 +87,7 @@ export function XmlView({ testScript, validationState: _validationState }: XmlVi
       <div className="border rounded-md overflow-hidden">
         <SyntaxHighlighter 
           language="xml" 
-          code={formatToXml(testScript)} 
+          code={formatToXml(testScript, isR5)} 
           showLineNumbers
           validationErrors={validationErrors}
         />

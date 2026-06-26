@@ -5,32 +5,34 @@ import { cleanEmptySections } from "@/lib/utils"
 /**
  * Enrichert TestScript mit Standardwerten für XML-Export
  */
-function enrichWithDefaults(testScript: TestScript): TestScript {
+function enrichWithDefaults(testScript: TestScript, isR5: boolean): TestScript {
   const enriched = JSON.parse(JSON.stringify(testScript)) as TestScript
 
-  // Add default stopTestOnFail to all assert elements
-  const addStopTestOnFail = (obj: any): void => {
+  const handleStopTestOnFail = (obj: any): void => {
     if (typeof obj !== 'object' || obj === null) return
 
     if (obj.assert && typeof obj.assert === 'object') {
-      // Always set stopTestOnFail to false if not already set
-      if (obj.assert.stopTestOnFail === undefined || obj.assert.stopTestOnFail === null) {
-        obj.assert.stopTestOnFail = false
+      if (isR5) {
+        if (obj.assert.stopTestOnFail === undefined || obj.assert.stopTestOnFail === null) {
+          obj.assert.stopTestOnFail = false
+        }
+      } else {
+        delete obj.assert.stopTestOnFail
       }
     }
 
     Object.values(obj).forEach((value) => {
       if (typeof value === 'object' && value !== null) {
         if (Array.isArray(value)) {
-          value.forEach(addStopTestOnFail)
+          value.forEach(handleStopTestOnFail)
         } else {
-          addStopTestOnFail(value)
+          handleStopTestOnFail(value)
         }
       }
     })
   }
 
-  addStopTestOnFail(enriched)
+  handleStopTestOnFail(enriched)
 
   // Convert consolidated profile format to split FHIR format (profile + _profile)
   if (enriched.profile && Array.isArray(enriched.profile)) {
@@ -120,7 +122,8 @@ function formatXml(xml: string): string {
 /**
  * Fügt <stopTestOnFail value="false"/> als Kindelement zu allen assert-Elementen hinzu, die dieses Element nicht haben
  */
-function addStopTestOnFailToXml(xml: string): string {
+function addStopTestOnFailToXml(xml: string, isR5: boolean): string {
+  if (!isR5) return xml
   // Add <stopTestOnFail value="false"/> as child element to <assert> elements that don't have it
   let result = xml.replace(/(<assert[^>]*>\n)([\s\S]*?)(\n\s*<\/assert>)/g, (match, openTag, content, closeTag) => {
     if (!content.includes('<stopTestOnFail')) {
@@ -156,13 +159,13 @@ function addStopTestOnFailToXml(xml: string): string {
  * Formatiert ein TestScript-Objekt als XML
  * Verwendet fhir-tool für FHIR-konforme XML-Konvertierung
  */
-export function formatToXml(testScript: TestScript): string {
+export function formatToXml(testScript: TestScript, isR5 = false): string {
   try {
     // Bereinige leere Sektionen vor der Serialisierung
     const cleanedTestScript = cleanEmptySections(testScript)
 
     // Enrich with default values
-    const enrichedTestScript = enrichWithDefaults(cleanedTestScript)
+    const enrichedTestScript = enrichWithDefaults(cleanedTestScript, isR5)
 
     const fhir = new Fhir()
     const xmlContent = fhir.objToXml(enrichedTestScript)
@@ -171,7 +174,7 @@ export function formatToXml(testScript: TestScript): string {
     const formattedXml = formatXml(xmlContent)
 
     // Add stopTestOnFail to assert elements
-    return addStopTestOnFailToXml(formattedXml)
+    return addStopTestOnFailToXml(formattedXml, isR5)
   } catch (error: unknown) {
     console.error("XML-Formatierungsfehler:", error)
     if (error instanceof Error) {
