@@ -4,7 +4,7 @@ import { cleanEmptySections } from "@/lib/utils"
 /**
  * Formatiert beliebige Daten als JSON mit anpassbarer Einrückung
  */
-export function formatToJson<T>(data: T, spaces = 2): string {
+export function formatToJson<T>(data: T, spaces = 2, isR5?: boolean): string {
   try {
     // Wenn es ein TestScript ist, bereinige leere Sektionen
     const dataToFormat = isTestScript(data) ? cleanEmptySections(data) : data
@@ -12,6 +12,11 @@ export function formatToJson<T>(data: T, spaces = 2): string {
     // Reorder fields to put profile and _profile next to each other
     if (isTestScript(dataToFormat)) {
       reorderProfileFields(dataToFormat)
+      if (isR5 !== undefined) {
+        const withStopTestHandled = JSON.parse(JSON.stringify(dataToFormat))
+        handleStopTestOnFail(withStopTestHandled, isR5)
+        return JSON.stringify(withStopTestHandled, null, spaces)
+      }
     }
 
     return JSON.stringify(dataToFormat, null, spaces)
@@ -58,6 +63,30 @@ function reorderProfileFields(obj: any): void {
         value.forEach(reorderProfileFields)
       } else {
         reorderProfileFields(value)
+      }
+    }
+  })
+}
+
+function handleStopTestOnFail(obj: any, isR5: boolean): void {
+  if (typeof obj !== 'object' || obj === null) return
+
+  if (obj.assert && typeof obj.assert === 'object') {
+    if (isR5) {
+      if (obj.assert.stopTestOnFail === undefined || obj.assert.stopTestOnFail === null) {
+        obj.assert.stopTestOnFail = false
+      }
+    } else {
+      delete obj.assert.stopTestOnFail
+    }
+  }
+
+  Object.values(obj).forEach((value) => {
+    if (typeof value === 'object' && value !== null) {
+      if (Array.isArray(value)) {
+        value.forEach(item => handleStopTestOnFail(item, isR5))
+      } else {
+        handleStopTestOnFail(value, isR5)
       }
     }
   })

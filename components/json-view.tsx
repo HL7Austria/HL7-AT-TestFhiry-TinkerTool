@@ -29,6 +29,7 @@ interface JsonViewProps {
 
 export function JsonView({ testScript, validationState }: JsonViewProps) {
   const { currentVersion } = useFhirVersion()
+  const isR5 = currentVersion === "R5"
   
   // Verwende IMMER den übergebenen validationState (kein Fallback!)
   const { validationResult } = validationState || { validationResult: null }
@@ -141,7 +142,7 @@ export function JsonView({ testScript, validationState }: JsonViewProps) {
   };
   
   // Formatted JSON for line number calculation
-  const formattedJson = formatToJson(testScript);
+  const formattedJson = formatToJson(testScript, 2, isR5);
   
   // Convert validation errors to line-based errors for JSON
   const validationErrors = useMemo(() => {
@@ -206,7 +207,7 @@ export function JsonView({ testScript, validationState }: JsonViewProps) {
   const warningCount = validationErrors.filter(e => e.severity === 'warning').length
 
   const copyToClipboard = async () => {
-    const content = formatToJson(testScript)
+    const content = formatToJson(testScript, 2, isR5)
     try {
       await clientOnly.clipboard.writeText(content)
       toast.success("Copied to clipboard", {
@@ -221,7 +222,7 @@ export function JsonView({ testScript, validationState }: JsonViewProps) {
   }
 
   const downloadContent = () => {
-    const content = formatToJson(testScript)
+    const content = formatToJson(testScript, 2, isR5)
     const filename = `testscript_${testScript.id || "export"}.json`
 
     clientOnly.download.file(content, filename, "application/json")
@@ -281,7 +282,7 @@ export function JsonView({ testScript, validationState }: JsonViewProps) {
       <div className="border rounded-md overflow-hidden">
         <SyntaxHighlighter 
           language="json" 
-          code={formatToJson(testScript)} 
+          code={formatToJson(testScript, 2, isR5)} 
           showLineNumbers
           validationErrors={validationErrors}
         />

@@ -18,6 +18,7 @@ import type {
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useFhirVersion } from "@/lib/fhir-version-context"
 
 interface AssertionComponentProps {
   assertion: TestScriptSetupActionAssert
@@ -54,6 +55,7 @@ export const AssertionComponent = memo(function AssertionComponent({
   errors,
   availableProfiles = [],
 }: AssertionComponentProps) {
+  const { currentVersion } = useFhirVersion()
   const updateField = <TKey extends keyof TestScriptSetupActionAssert>(
     field: TKey,
     value: TestScriptSetupActionAssert[TKey],
@@ -418,21 +420,23 @@ export const AssertionComponent = memo(function AssertionComponent({
             />
           </div>
         </div>
-        <div className="rounded-md border p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="assertion-stop-on-fail">Stop Test on Fail</Label>
-              <p className="text-xs text-muted-foreground">
-                Abort execution on errors.
-              </p>
+        {currentVersion === "R5" && (
+          <div className="rounded-md border p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="assertion-stop-on-fail">Stop Test on Fail</Label>
+                <p className="text-xs text-muted-foreground">
+                  Abort execution on errors.
+                </p>
+              </div>
+              <Switch
+                id="assertion-stop-on-fail"
+                checked={assertion.stopTestOnFail ?? false}
+                onCheckedChange={(checked) => updateField("stopTestOnFail", checked)}
+              />
             </div>
-            <Switch
-              id="assertion-stop-on-fail"
-              checked={assertion.stopTestOnFail ?? false}
-              onCheckedChange={(checked) => updateField("stopTestOnFail", checked)}
-            />
           </div>
-        </div>
+        )}
       </div>
 
       <div className="space-y-2 border-t pt-4">

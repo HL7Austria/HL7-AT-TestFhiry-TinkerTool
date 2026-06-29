@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Plus } from "lucide-react"
 import type { TestScriptSetup, TestScriptSetupAction } from "@/types/fhir-enhanced"
+import { useFhirVersion } from "@/lib/fhir-version-context"
 import ActionComponent from "../shared/action-component"
 
 interface SetupSectionProps {
@@ -16,6 +17,7 @@ interface SetupSectionProps {
 
 export default function SetupSection({ setup, updateSetup, availableFixtures = [], availableProfiles = [] }: SetupSectionProps) {
   const actions = setup.action ?? []
+  const { currentVersion } = useFhirVersion()
 
   const addSetupAction = () => {
     const newAction: TestScriptSetupAction = {
@@ -34,7 +36,7 @@ export default function SetupSection({ setup, updateSetup, availableFixtures = [
       assert: {
         response: "okay",
         warningOnly: false,
-        stopTestOnFail: true,
+        stopTestOnFail: currentVersion === "R5",
       },
     }
     updateSetup({

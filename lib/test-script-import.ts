@@ -11,7 +11,7 @@ export interface ImportResult {
 /**
  * Parst eine JSON-Datei zu einem TestScript
  */
-export function parseJsonTestScript(jsonContent: string): ImportResult {
+export function parseJsonTestScript(jsonContent: string, isR5?: boolean): ImportResult {
   try {
     const parsed = JSON.parse(jsonContent) as unknown
 
@@ -35,6 +35,10 @@ export function parseJsonTestScript(jsonContent: string): ImportResult {
 
     // Reorder fields to put profile and _profile next to each other
     reorderProfileFields(testScript)
+
+    if (isR5 !== undefined) {
+      enrichWithDefaults(testScript, isR5)
+    }
 
     return {
       success: true,
@@ -91,7 +95,7 @@ function reorderProfileFields(obj: any): void {
  * Konvertiert XML zu JSON und parst dann das TestScript
  * Verwendet fhir-tool für FHIR-konforme XML-Konvertierung
  */
-export function parseXmlTestScript(xmlContent: string): ImportResult {
+export function parseXmlTestScript(xmlContent: string, isR5?: boolean): ImportResult {
   try {
     const fhir = new Fhir()
     const jsonContent = fhir.xmlToObj(xmlContent) as TestScript
@@ -108,7 +112,7 @@ export function parseXmlTestScript(xmlContent: string): ImportResult {
     reorderProfileFields(jsonContent)
 
     // Enrich with default values to preserve 1:1 fidelity
-    enrichWithDefaults(jsonContent)
+    enrichWithDefaults(jsonContent, isR5 ?? true)
 
     return {
       success: true,
@@ -125,30 +129,32 @@ export function parseXmlTestScript(xmlContent: string): ImportResult {
 /**
  * Enrichert TestScript mit Standardwerten für 1:1 Import/Export
  */
-function enrichWithDefaults(testScript: TestScript): void {
-  // Add default stopTestOnFail to all assert elements
-  const addStopTestOnFail = (obj: any): void => {
+function enrichWithDefaults(testScript: TestScript, isR5: boolean): void {
+  const handleStopTestOnFail = (obj: any): void => {
     if (typeof obj !== 'object' || obj === null) return
 
     if (obj.assert && typeof obj.assert === 'object') {
-      // Always set stopTestOnFail to false if not already set
-      if (obj.assert.stopTestOnFail === undefined || obj.assert.stopTestOnFail === null) {
-        obj.assert.stopTestOnFail = false
+      if (isR5) {
+        if (obj.assert.stopTestOnFail === undefined || obj.assert.stopTestOnFail === null) {
+          obj.assert.stopTestOnFail = false
+        }
+      } else {
+        delete obj.assert.stopTestOnFail
       }
     }
 
     Object.values(obj).forEach((value) => {
       if (typeof value === 'object' && value !== null) {
         if (Array.isArray(value)) {
-          value.forEach(addStopTestOnFail)
+          value.forEach(handleStopTestOnFail)
         } else {
-          addStopTestOnFail(value)
+          handleStopTestOnFail(value)
         }
       }
     })
   }
 
-  addStopTestOnFail(testScript)
+  handleStopTestOnFail(testScript)
 
   // Handle profile in different FHIR formats:
   // 1. Split format: profile (strings) + _profile (objects with id)
@@ -241,22 +247,23 @@ export async function importTestScriptFromFile(
 ): Promise<ImportResult> {
   const fileContent = await file.text()
   const trimmedContent = fileContent.trim()
+  const isR5 = fhirVersion ? fhirVersion.toString() === "R5" : false
 
   let parseResult: ImportResult
 
   // Detect format primarily based on content, not filename
   if (trimmedContent.startsWith("{") || trimmedContent.startsWith("[")) {
     // JSON format detected
-    parseResult = parseJsonTestScript(fileContent)
+    parseResult = parseJsonTestScript(fileContent, isR5)
   } else if (trimmedContent.startsWith("<")) {
     // XML format detected
-    parseResult = parseXmlTestScript(fileContent)
+    parseResult = parseXmlTestScript(fileContent, isR5)
   } else {
     // Try both formats, starting with JSON
-    parseResult = parseJsonTestScript(fileContent)
+    parseResult = parseJsonTestScript(fileContent, isR5)
     if (!parseResult.success) {
       // If JSON fails, try XML
-      parseResult = parseXmlTestScript(fileContent)
+      parseResult = parseXmlTestScript(fileContent, isR5)
     }
     
     // If both fail, return error
