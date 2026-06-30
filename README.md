@@ -207,6 +207,7 @@ classDiagram
     TestScriptTest "1" o-- "0..*" TestScriptTestAction : has
     TestScriptTestAction "1" o-- "0..1" Operation : contains
     TestScriptTestAction "1" o-- "0..1" Assertion : contains
+```
 
 ## Codebase Overview
 
